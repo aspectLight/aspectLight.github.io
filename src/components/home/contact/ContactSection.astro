@@ -1,0 +1,44 @@
+---
+import Section from '@components/ui/Section.astro';
+import { SectionId } from '@core/enums/section-id.enum';
+import { PROFILE } from '@data/profile.data';
+import { getTranslations } from '@i18n/i18n';
+import type { SectionProps } from '../section-props.types';
+
+type Props = SectionProps;
+
+const { locale, number } = Astro.props;
+const t = getTranslations(locale);
+---
+
+<Section id={SectionId.Contact} number={number} title={t.sectionTitles[SectionId.Contact]}>
+  <p class="contact__lead">{t.contactLead}</p>
+  <p class="contact__email">
+    <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a>
+  </p>
+  <p class="contact__links">
+    <a href={PROFILE.linkedInUrl}>{t.linkedInLabel}</a>
+    <span aria-hidden="true">·</span>
+    <a href={PROFILE.gitHubUrl}>{t.gitHubLabel}</a>
+  </p>
+</Section>
+
+<style>
+  .contact__lead {
+    font-family: var(--font-family-serif);
+    font-size: var(--type-lede-size);
+    line-height: var(--type-lede-leading);
+    margin-block-end: var(--space-4);
+  }
+
+  .contact__email {
+    margin-block-end: var(--space-3);
+    overflow-wrap: anywhere;
+  }
+
+  .contact__links {
+    display: flex;
+    gap: var(--space-2);
+    font-size: var(--type-label-size);
+  }
+</style>

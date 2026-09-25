@@ -1,0 +1,29 @@
+---
+import type { Locale } from '@core/enums/locale.enum';
+import type { IsoDate } from '@core/types/formats.types';
+import { getTranslations } from '@i18n/i18n';
+
+interface Props {
+  readonly locale: Locale;
+  readonly revisionDate: IsoDate;
+}
+
+const { locale, revisionDate } = Astro.props;
+const t = getTranslations(locale);
+---
+
+<footer class="site-footer">
+  <p>
+    {t.revisionLabel} <time datetime={revisionDate}>{revisionDate}</time>
+  </p>
+</footer>
+
+<style>
+  .site-footer {
+    border-block-start: var(--line-width) solid var(--color-rule);
+    color: var(--color-muted);
+    font-size: var(--type-small-size);
+    padding-block: var(--space-6);
+    padding-inline: var(--layout-offset) var(--space-gutter);
+  }
+</style>

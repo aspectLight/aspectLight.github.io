@@ -1,0 +1,6 @@
+dist
+.astro
+pnpm-lock.yaml
+docs
+public
+.playwright-mcp

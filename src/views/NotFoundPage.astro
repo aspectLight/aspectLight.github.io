@@ -1,0 +1,50 @@
+---
+import { HOME_PATHS } from '@core/constants/routes.constants';
+import { Locale } from '@core/enums/locale.enum';
+import { getTranslations } from '@i18n/i18n';
+import BaseLayout from '@layouts/BaseLayout.astro';
+
+/** A 404 has no locale in its URL, so it speaks both languages. */
+const messages = Object.values(Locale).map((locale) => ({
+  locale,
+  t: getTranslations(locale),
+}));
+const primary = getTranslations(Locale.En);
+---
+
+<BaseLayout
+  locale={Locale.En}
+  title={`404 — ${primary.pageTitle}`}
+  description={primary.notFoundMessage}
+  hasAlternates={false}
+>
+  <main id="content" class="not-found">
+    <p class="not-found__label">§ 404</p>
+    {messages.map(({ locale, t }) => (
+      <p class="not-found__message" lang={locale}>
+        {t.notFoundMessage} <a href={HOME_PATHS[locale]}>{t.notFoundLinkLabel}</a>
+      </p>
+    ))}
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: grid;
+    align-content: center;
+    gap: var(--space-4);
+    min-block-size: var(--layout-hero-min-height);
+    padding-inline: var(--layout-offset) var(--space-gutter);
+  }
+
+  .not-found__label {
+    color: var(--color-accent);
+    font-size: var(--type-label-size);
+    letter-spacing: var(--type-label-tracking);
+  }
+
+  .not-found__message {
+    font-family: var(--font-family-serif);
+    font-size: var(--type-entry-size);
+  }
+</style>

@@ -1,0 +1,129 @@
+---
+import { Image } from 'astro:assets';
+
+import avatar from '../../assets/avatar-terracotta.jpg';
+import { HERO_ELEMENT_ID, HERO_MARKER } from '@core/constants/site.constants';
+import type { Locale } from '@core/enums/locale.enum';
+import type { Profile } from '@core/types/profile.types';
+import { getTranslations } from '@i18n/i18n';
+
+interface Props {
+  readonly locale: Locale;
+  readonly profile: Profile;
+}
+
+const { locale, profile } = Astro.props;
+const t = getTranslations(locale);
+const fullName = `${profile.givenName} ${profile.familyName}`;
+---
+
+<section
+  class="title-block"
+  id={HERO_ELEMENT_ID}
+  aria-labelledby="title-block-name"
+  data-marker={HERO_MARKER}
+>
+  <div class="title-block__text">
+    <p class="title-block__label">
+      {HERO_MARKER} — {fullName}
+    </p>
+    <h1 class="title-block__name" id="title-block-name">
+      {profile.givenName}
+      <br />
+      {profile.familyName}
+    </h1>
+    <p class="title-block__author">{t.authorLine}</p>
+    <p class="title-block__abstract">
+      <em class="title-block__abstract-label">{t.abstractLabel}</em> {profile.abstract[locale]}
+    </p>
+  </div>
+  <figure class="title-block__avatar">
+    <div class="title-block__mount">
+      <Image
+        src={avatar}
+        alt={t.avatarAlt}
+        widths={[240, 480]}
+        sizes="(min-width: 1100px) 14.5rem, 12.5rem"
+        loading="eager"
+      />
+    </div>
+    <figcaption class="title-block__caption">{t.avatarCaption}</figcaption>
+  </figure>
+</section>
+
+<style>
+  .title-block {
+    display: grid;
+    align-content: center;
+    gap: var(--space-6);
+    min-block-size: var(--layout-hero-min-height);
+    padding-block: var(--layout-marker-clearance) var(--space-7);
+    padding-inline: var(--layout-offset) var(--space-gutter);
+  }
+
+  .title-block__label {
+    color: var(--color-accent);
+    font-size: var(--type-label-size);
+    letter-spacing: var(--type-label-tracking);
+  }
+
+  .title-block__name {
+    font-family: var(--font-family-serif);
+    font-size: var(--type-name-size);
+    font-weight: 400;
+    letter-spacing: var(--type-name-tracking);
+    line-height: var(--type-name-leading);
+    margin-block: var(--space-4) var(--space-5);
+  }
+
+  .title-block__author {
+    color: var(--color-muted);
+    font-size: var(--type-label-size);
+    margin-block-end: var(--space-6);
+  }
+
+  .title-block__abstract {
+    background: var(--color-paper);
+    border: var(--line-width) solid var(--color-rule);
+    font-size: var(--type-small-size);
+    max-inline-size: var(--layout-column);
+    padding: var(--space-5);
+  }
+
+  .title-block__abstract-label {
+    font-family: var(--font-family-serif);
+  }
+
+  .title-block__avatar {
+    inline-size: var(--layout-avatar);
+  }
+
+  .title-block__mount {
+    background: var(--color-mount);
+    border: var(--line-width) solid var(--color-rule);
+    padding: var(--space-2) var(--space-2) var(--layout-avatar-strip);
+  }
+
+  .title-block__mount img {
+    aspect-ratio: 2 / 3;
+    block-size: auto;
+    inline-size: 100%;
+    object-fit: cover;
+    object-position: 50% 30%;
+  }
+
+  .title-block__caption {
+    color: var(--color-muted);
+    font-size: var(--type-small-size);
+    line-height: var(--type-small-leading);
+    margin-block-start: var(--space-2);
+  }
+
+  @media (width >= 1100px) {
+    .title-block {
+      align-items: center;
+      grid-template-columns: minmax(0, var(--layout-column)) var(--layout-avatar);
+      column-gap: var(--space-8);
+    }
+  }
+</style>

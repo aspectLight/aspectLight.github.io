@@ -1,0 +1,67 @@
+---
+import { HOME_PATHS } from '@core/constants/routes.constants';
+import { HERO_MARKER } from '@core/constants/site.constants';
+import type { Locale } from '@core/enums/locale.enum';
+import { getOtherLocale, getTranslations } from '@i18n/i18n';
+
+interface Props {
+  readonly locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = getTranslations(locale);
+const otherLocale = getOtherLocale(locale);
+---
+
+<div class="section-marker">
+  <p class="section-marker__box" aria-hidden="true" data-section-marker-label>
+    {HERO_MARKER}
+  </p>
+  <nav class="section-marker__languages" aria-label={t.languageNavLabel}>
+    <a href={HOME_PATHS[locale]} aria-current="page" lang={locale}>
+      {t.localeLabels[locale]}
+    </a>
+    <span aria-hidden="true">·</span>
+    <a href={HOME_PATHS[otherLocale]} hreflang={otherLocale} lang={otherLocale} data-language-link>
+      {t.localeLabels[otherLocale]}
+    </a>
+  </nav>
+</div>
+
+<script>
+  import { initSectionMarker } from './section-marker.client';
+
+  initSectionMarker(document);
+</script>
+
+<style>
+  .section-marker {
+    align-items: center;
+    display: flex;
+    gap: var(--space-3);
+    font-size: var(--type-small-size);
+    inset-block-start: var(--space-5);
+    inset-inline-end: var(--space-5);
+    position: fixed;
+    z-index: var(--layer-marker);
+  }
+
+  .section-marker__box {
+    background: var(--color-paper);
+    border: var(--line-width) solid var(--color-rule);
+    padding: var(--space-1) var(--space-3);
+  }
+
+  .section-marker__languages {
+    background: var(--color-paper);
+    color: var(--color-muted);
+    display: flex;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .section-marker__languages [aria-current='page'] {
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+</style>

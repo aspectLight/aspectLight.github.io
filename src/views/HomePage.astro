@@ -1,0 +1,51 @@
+---
+import Background3D from '@components/home/background-3d/Background3D.astro';
+import ScrollReveal from '@components/home/scroll-reveal/ScrollReveal.astro';
+import { SECTION_COMPONENTS } from '@components/home/section-components';
+import SectionMarker from '@components/home/section-marker/SectionMarker.astro';
+import SiteFooter from '@components/home/SiteFooter.astro';
+import TitleBlock from '@components/home/TitleBlock.astro';
+import { getBuildDate } from '@core/date/get-build-date';
+import type { Locale } from '@core/enums/locale.enum';
+import { SectionId } from '@core/enums/section-id.enum';
+import { getVisibleSections } from '@core/sections/get-visible-sections';
+import type { SectionEntryCounts } from '@core/types/section.types';
+import { CERTIFICATIONS } from '@data/certifications.data';
+import { EDUCATION } from '@data/education.data';
+import { PROFILE } from '@data/profile.data';
+import { PROJECTS } from '@data/projects.data';
+import { SECTION_SETTINGS } from '@data/section-settings.data';
+import { getTranslations } from '@i18n/i18n';
+import BaseLayout from '@layouts/BaseLayout.astro';
+
+interface Props {
+  readonly locale: Locale;
+}
+
+/** Contact is built from the profile, so it always has exactly one entry. */
+const CONTACT_ENTRY_COUNT = 1;
+
+const { locale } = Astro.props;
+const t = getTranslations(locale);
+const entryCounts: SectionEntryCounts = {
+  [SectionId.Education]: EDUCATION.length,
+  [SectionId.Projects]: PROJECTS.length,
+  [SectionId.Certifications]: CERTIFICATIONS.length,
+  [SectionId.Contact]: CONTACT_ENTRY_COUNT,
+};
+const visibleSections = getVisibleSections(entryCounts, SECTION_SETTINGS);
+---
+
+<BaseLayout locale={locale} title={t.pageTitle} description={t.pageDescription} hasAlternates>
+  <Background3D />
+  <SectionMarker locale={locale} />
+  <main id="content">
+    <TitleBlock locale={locale} profile={PROFILE} />
+    {visibleSections.map(({ id, number }) => {
+      const SectionComponent = SECTION_COMPONENTS[id];
+      return <SectionComponent locale={locale} number={number} />;
+    })}
+  </main>
+  <SiteFooter locale={locale} revisionDate={getBuildDate()} />
+  <ScrollReveal />
+</BaseLayout>

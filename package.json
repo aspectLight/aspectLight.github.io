@@ -4,22 +4,48 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.12"
+    "node": ">=24.16"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "24.21.0",
+      "onFail": "download"
+    }
   },
   "packageManager": "pnpm@11.27.1",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "typecheck": "astro check --minimumFailingSeverity warning"
+    "typecheck": "astro check --minimumFailingSeverity warning",
+    "lint": "eslint . --max-warnings 0",
+    "lint:css": "stylelint \"src/**/*.{css,astro}\" --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:css && pnpm format:check"
   },
   "dependencies": {
-    "astro": "7.3.5",
-    "sharp": "0.35.4"
+    "astro": "7.3.4",
+    "sharp": "0.35.4",
+    "three": "0.186.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
-    "@types/node": "26.6.2",
-    "typescript": "6.0.3"
+    "@eslint/js": "10.0.1",
+    "@types/node": "24.13.6",
+    "@types/three": "0.186.0",
+    "eslint": "10.11.0",
+    "eslint-plugin-astro": "3.2.1",
+    "eslint-plugin-jsx-a11y-x": "0.2.0",
+    "globals": "17.12.0",
+    "postcss-html": "2.0.0",
+    "prettier": "3.9.9",
+    "prettier-plugin-astro": "1.0.1",
+    "stylelint": "17.15.0",
+    "stylelint-config-html": "2.0.0",
+    "stylelint-config-standard": "40.0.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1"
   }
 }

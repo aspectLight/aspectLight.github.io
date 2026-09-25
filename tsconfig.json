@@ -2,18 +2,16 @@
   "extends": "astro/tsconfigs/strictest",
   "compilerOptions": {
     "verbatimModuleSyntax": true,
-    "erasableSyntaxOnly": true,
     "noPropertyAccessFromIndexSignature": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
-    "baseUrl": ".",
     "paths": {
-      "@adapters/*": ["src/adapters/*"],
-      "@content/*": ["src/content/*"],
-      "@i18n/*": ["src/i18n/*"],
-      "@sections/*": ["src/sections/*"],
-      "@typescript/*": ["src/typescript/*"],
-      "@values/*": ["src/values/*"]
+      "@components/*": ["./src/components/*"],
+      "@core/*": ["./src/core/*"],
+      "@data/*": ["./src/data/*"],
+      "@i18n/*": ["./src/i18n/*"],
+      "@layouts/*": ["./src/layouts/*"],
+      "@views/*": ["./src/views/*"]
     }
   },
   "include": [".astro/types.d.ts", "**/*"],

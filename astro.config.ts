@@ -1,14 +1,15 @@
 import { defineConfig, fontProviders } from 'astro/config';
 
-import { LOCALES } from './src/i18n/locales';
+import { Locale } from './src/core/enums/locale.enum';
 
 const SITE = 'https://aspectlight.github.io';
+const FONT_SUBSETS: [string, ...string[]] = ['latin', 'latin-ext'];
 
 export default defineConfig({
   site: SITE,
   i18n: {
-    locales: [...LOCALES],
-    defaultLocale: 'en',
+    locales: Object.values(Locale),
+    defaultLocale: Locale.En,
     routing: {
       prefixDefaultLocale: false,
     },
@@ -16,29 +17,20 @@ export default defineConfig({
   fonts: [
     {
       provider: fontProviders.fontsource(),
-      name: 'Libre Caslon Display',
-      cssVariable: '--font-display',
+      name: 'EB Garamond',
+      cssVariable: '--font-serif',
       weights: [400],
-      styles: ['normal'],
-      subsets: ['latin', 'latin-ext'],
+      styles: ['normal', 'italic'],
+      subsets: FONT_SUBSETS,
       fallbacks: ['serif'],
     },
     {
       provider: fontProviders.fontsource(),
-      name: 'Libre Caslon Text',
-      cssVariable: '--font-text',
-      weights: [400],
-      styles: ['italic'],
-      subsets: ['latin', 'latin-ext'],
-      fallbacks: ['serif'],
-    },
-    {
-      provider: fontProviders.fontsource(),
-      name: 'Commit Mono',
+      name: 'JetBrains Mono',
       cssVariable: '--font-mono',
       weights: [400],
       styles: ['normal'],
-      subsets: ['latin', 'latin-ext'],
+      subsets: FONT_SUBSETS,
       fallbacks: ['monospace'],
     },
   ],

@@ -1,0 +1,64 @@
+---
+import EmptyState from '@components/ui/EmptyState.astro';
+import EntryReference from '@components/ui/EntryReference.astro';
+import Section from '@components/ui/Section.astro';
+import { formatMonth } from '@core/date/format-month';
+import { SectionId } from '@core/enums/section-id.enum';
+import { CERTIFICATIONS } from '@data/certifications.data';
+import { getTranslations } from '@i18n/i18n';
+import type { SectionProps } from '../section-props.types';
+
+type Props = SectionProps;
+
+const { locale, number } = Astro.props;
+const t = getTranslations(locale);
+const isEmpty = CERTIFICATIONS.length === 0;
+---
+
+<Section
+  id={SectionId.Certifications}
+  number={number}
+  title={t.sectionTitles[SectionId.Certifications]}
+>
+  {isEmpty && <EmptyState message={t.emptyCertifications} />}
+  {!isEmpty && (
+    <ol class="certification-list">
+      {CERTIFICATIONS.map((certification, index) => (
+        <li class="certification-entry">
+          <EntryReference number={index + 1} />
+          <p>
+            <cite class="certification-entry__title" lang={certification.titleLocale}>
+              {certification.title}
+            </cite>
+            {' · '}
+            {certification.issuer} · {formatMonth(certification.issued, locale)}
+            {certification.verifyUrl !== undefined && (
+              <>
+                {' · '}
+                <a href={certification.verifyUrl}>{t.verifyLabel} ↗</a>
+              </>
+            )}
+          </p>
+        </li>
+      ))}
+    </ol>
+  )}
+</Section>
+
+<style>
+  .certification-list {
+    display: grid;
+    gap: var(--space-4);
+    max-inline-size: var(--layout-column);
+  }
+
+  .certification-entry {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: auto 1fr;
+  }
+
+  .certification-entry__title {
+    font-family: var(--font-family-serif);
+  }
+</style>

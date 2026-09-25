@@ -1,0 +1,15 @@
+---
+interface Props {
+  readonly message: string;
+}
+
+const { message } = Astro.props;
+---
+
+<p class="empty-state">{message}</p>
+
+<style>
+  .empty-state {
+    color: var(--color-muted);
+  }
+</style>

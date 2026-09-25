@@ -1,0 +1,18 @@
+---
+interface Props {
+  readonly number: number;
+}
+
+const { number } = Astro.props;
+---
+
+<span class="entry-reference" aria-hidden="true">
+  [{number}]
+</span>
+
+<style>
+  .entry-reference {
+    color: var(--color-accent);
+    font-size: var(--type-label-size);
+  }
+</style>

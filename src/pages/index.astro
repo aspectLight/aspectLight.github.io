@@ -1,5 +1,6 @@
 ---
-import HomePage from '../views/home/HomePage.astro';
+import { Locale } from '@core/enums/locale.enum';
+import HomePage from '@views/HomePage.astro';
 ---
 
-<HomePage locale="en" />
+<HomePage locale={Locale.En} />
