@@ -9,8 +9,8 @@ export const PROFILE: Profile = {
   gitHubUrl: 'https://github.com/aspectLight',
   abstract: {
     [Locale.En]:
-      'Software engineering student at Polytechnique Montréal, in the artificial intelligence and data science track. I like problems where the answer has to be searched for, and systems that have to keep working when someone is trying to break them.',
+      'Software engineering student at Polytechnique Montréal, in the artificial intelligence and data science track. I like working on AI, especially optimization and algorithms, and making AI systems secure and robust.',
     [Locale.Fr]:
-      'Étudiant en génie logiciel à Polytechnique Montréal, orientation intelligence artificielle et sciences des données. J’aime les problèmes dont la réponse doit se chercher, et les systèmes qui doivent tenir quand quelqu’un essaie de les casser.',
+      'Étudiant en génie logiciel à Polytechnique Montréal, orientation intelligence artificielle et sciences des données. J’aime travailler en IA, surtout sur l’optimisation et les algorithmes, et sur la sécurité et la robustesse des systèmes d’IA.',
   },
 };
