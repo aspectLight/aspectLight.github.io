@@ -1,4 +1,4 @@
-import type { OrbitRing, Point2, Point3 } from './background-3d.types';
+import type { Point2, Point3 } from './background-3d.types';
 
 /* Scene */
 export const CAMERA_FIELD_OF_VIEW = 40;
@@ -93,13 +93,7 @@ export const SAMPLE_OPACITY = 0.85;
 /** Oldest answers are dropped past this many, so memory stays bounded. */
 export const MAX_SAMPLES = 200;
 
-/* Ambient layer: thin orbit rings and dust around the cat */
-export const ORBIT_RINGS: readonly OrbitRing[] = [
-  { radius: 3.4, opacity: 0.2, baseRotation: [0, 0, 0], spin: [0.1, 0, 0.05] },
-  { radius: 3.85, opacity: 0.13, baseRotation: [Math.PI / 3, 0, 0], spin: [0.03, 0.08, 0] },
-  { radius: 4.3, opacity: 0.09, baseRotation: [0, Math.PI / 4, 0], spin: [0, 0, 0.12] },
-];
-export const ORBIT_SEGMENTS = 160;
+/* Dust: faint specks drifting around the cat */
 export const DUST_COUNT = 120;
 /** Dust fills a box this size around the centre. */
 export const DUST_BOX: Point3 = [12, 12, 6];

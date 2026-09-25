@@ -9,7 +9,6 @@ import {
   WebGLRenderer,
 } from 'three';
 
-import { AmbientLayer } from './background-3d.ambient';
 import { CatModel } from './background-3d.cat';
 import {
   CAMERA_DISTANCE,
@@ -22,6 +21,7 @@ import {
   QUERY_LINE_SECONDS,
 } from './background-3d.constants';
 import { createDotTexture } from './background-3d.dot';
+import { DustLayer } from './background-3d.dust';
 import { buildCatNetwork } from './background-3d.network';
 import { isReconstructed, QueryLog } from './background-3d.queries';
 import { QueryLayer } from './background-3d.query-layer';
@@ -40,7 +40,7 @@ function readAccentColor(doc: Document): Color {
 /**
  * Draws the avatar's cat as a neural network behind the page: neurons filling
  * its silhouette in layers, with signals climbing from the paws to the ears,
- * inside slowly turning orbit rings and dust. The shape never changes; its
+ * among faint drifting dust. The shape never changes; its
  * faint outline can be uncovered one proximity query at a time. With reduced
  * motion it is drawn still.
  */
@@ -49,10 +49,10 @@ export class BackgroundScene {
   private readonly scene = new Scene();
   private readonly camera = new PerspectiveCamera(CAMERA_FIELD_OF_VIEW, 1, CAMERA_NEAR, CAMERA_FAR);
   private readonly cat: CatModel;
-  private readonly ambient: AmbientLayer;
+  private readonly dust: DustLayer;
   private readonly queries: QueryLog;
   private readonly queryLayer: QueryLayer;
-  /** Seconds of animation so far; drives the sway, bob and orbits. */
+  /** Seconds of animation so far; drives the sway, bob and dust. */
   private elapsed = 0;
   private lastFrameTime: number | undefined;
 
@@ -68,11 +68,11 @@ export class BackgroundScene {
     const network = buildCatNetwork();
     const outline = network.outline.map(([x, y]): Point2 => [x, y]);
     this.cat = new CatModel(network, palette);
-    this.ambient = new AmbientLayer(palette);
+    this.dust = new DustLayer(palette);
     this.queries = new QueryLog(outline);
     this.queryLayer = new QueryLayer(outline.length, palette);
     this.cat.group.add(this.queryLayer.group);
-    this.scene.add(this.cat.group, this.ambient.group);
+    this.scene.add(this.cat.group, this.dust.points);
   }
 
   /** Sizes the canvas, follows window and colour-scheme changes, and draws. */
@@ -121,19 +121,19 @@ export class BackgroundScene {
     this.camera.updateProjectionMatrix();
     const scale = width < height ? PORTRAIT_SCALE : 1;
     this.cat.group.scale.setScalar(scale);
-    this.ambient.group.scale.setScalar(scale);
+    this.dust.points.scale.setScalar(scale);
   }
 
   private recolor(): void {
     const color = readAccentColor(this.doc);
     this.cat.recolor(color);
-    this.ambient.recolor(color);
+    this.dust.recolor(color);
     this.queryLayer.recolor(color);
   }
 
   private render(): void {
     this.cat.pose(this.elapsed);
-    this.ambient.pose(this.elapsed);
+    this.dust.pose(this.elapsed);
     this.renderer.render(this.scene, this.camera);
   }
 
