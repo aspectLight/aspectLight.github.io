@@ -1,4 +1,6 @@
 ---
+import { revealDelay } from '@core/motion/reveal-delay';
+
 interface Props {
   readonly message: string;
 }
@@ -6,7 +8,9 @@ interface Props {
 const { message } = Astro.props;
 ---
 
-<p class="empty-state">{message}</p>
+<p class="empty-state" data-reveal style={revealDelay(1)}>
+  {message}
+</p>
 
 <style>
   .empty-state {

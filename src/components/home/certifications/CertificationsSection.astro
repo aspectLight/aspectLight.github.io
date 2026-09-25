@@ -4,6 +4,7 @@ import EntryReference from '@components/ui/EntryReference.astro';
 import Section from '@components/ui/Section.astro';
 import { formatMonth } from '@core/date/format-month';
 import { SectionId } from '@core/enums/section-id.enum';
+import { revealDelay } from '@core/motion/reveal-delay';
 import { CERTIFICATIONS } from '@data/certifications.data';
 import { getTranslations } from '@i18n/i18n';
 import type { SectionProps } from '../section-props.types';
@@ -24,7 +25,7 @@ const isEmpty = CERTIFICATIONS.length === 0;
   {!isEmpty && (
     <ol class="certification-list">
       {CERTIFICATIONS.map((certification, index) => (
-        <li class="certification-entry">
+        <li class="certification-entry" data-reveal style={revealDelay(index + 1)}>
           <EntryReference number={index + 1} />
           <p>
             <cite class="certification-entry__title" lang={certification.titleLocale}>

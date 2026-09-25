@@ -262,7 +262,29 @@ const SHAPE_BUILDERS: Readonly<Record<BackgroundShape, () => Segment[]>> = {
   [BackgroundShape.Cat]: buildCat,
 };
 
-/** Line-segment vertex positions for a shape, ready for a Three.js BufferGeometry. */
-export function buildShapePositions(shape: BackgroundShape): Float32Array {
-  return new Float32Array(SHAPE_BUILDERS[shape]().flatMap(([from, to]) => [...from, ...to]));
+/**
+ * Stretches a shape to `count` segments by appending zero-length segments that
+ * sit on its own vertices. They draw nothing, but give every shape the same
+ * number of vertices, so any two shapes can be morphed point by point.
+ */
+function padSegments(segments: readonly Segment[], count: number): Segment[] {
+  const padding = Array.from({ length: count - segments.length }, (_, index): Segment[] => {
+    const anchor = segments[index % segments.length];
+    return anchor === undefined ? [] : [[anchor[1], anchor[1]]];
+  }).flat();
+  return [...segments, ...padding];
+}
+
+function toPositions(segments: readonly Segment[]): Float32Array {
+  return new Float32Array(segments.flatMap(([from, to]) => [...from, ...to]));
+}
+
+/**
+ * Vertex positions for each shape, all the same length and ready to be
+ * interpolated into one Three.js LineSegments buffer.
+ */
+export function buildMorphTargets(shapes: readonly BackgroundShape[]): Float32Array[] {
+  const segmentsPerShape = shapes.map((shape) => SHAPE_BUILDERS[shape]());
+  const count = Math.max(...segmentsPerShape.map((segments) => segments.length));
+  return segmentsPerShape.map((segments) => toPositions(padSegments(segments, count)));
 }

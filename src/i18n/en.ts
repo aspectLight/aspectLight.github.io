@@ -16,7 +16,7 @@ export const EN: Translations = {
   abstractLabel: 'Abstract.',
   avatarAlt:
     'Illustration: a black cat seen from behind, sitting in front of a wall of terracotta and sand hexagons, with a hand-hatched texture.',
-  avatarCaption: 'Fig. 0 — Avatar: a cat on hexagons, hatched.',
+  contactShortcutLabel: './contact',
   sectionTitles: {
     [SectionId.Education]: 'Education',
     [SectionId.Projects]: 'Projects',

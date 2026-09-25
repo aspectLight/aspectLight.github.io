@@ -5,8 +5,12 @@ export type Point2 = readonly [number, number];
 /** A straight line between two points; shapes are lists of these. */
 export type Segment = readonly [Point3, Point3];
 
-/** A circle of the ambient layer, tilted around the X and Z axes (radians). */
+/** A thin circle of the ambient layer that turns on its own axes. */
 export interface OrbitRing {
   readonly radius: number;
-  readonly tilt: Point2;
+  readonly opacity: number;
+  /** Starting rotation around X, Y and Z, in radians. */
+  readonly baseRotation: Point3;
+  /** Rotation speed around X, Y and Z, in radians per second. */
+  readonly spin: Point3;
 }

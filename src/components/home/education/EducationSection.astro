@@ -2,6 +2,7 @@
 import EntryReference from '@components/ui/EntryReference.astro';
 import Section from '@components/ui/Section.astro';
 import { SectionId } from '@core/enums/section-id.enum';
+import { revealDelay } from '@core/motion/reveal-delay';
 import { EDUCATION } from '@data/education.data';
 import { getTranslations } from '@i18n/i18n';
 import type { SectionProps } from '../section-props.types';
@@ -16,7 +17,7 @@ const t = getTranslations(locale);
 <Section id={SectionId.Education} number={number} title={t.sectionTitles[SectionId.Education]}>
   <ol class="education-list">
     {EDUCATION.map((entry, index) => (
-      <li class="education-entry">
+      <li class="education-entry" data-reveal style={revealDelay(index + 1)}>
         <EntryReference number={index + 1} />
         <div>
           <h3 class="education-entry__institution">{entry.institution}</h3>

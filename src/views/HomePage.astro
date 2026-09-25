@@ -3,6 +3,7 @@ import Background3D from '@components/home/background-3d/Background3D.astro';
 import ScrollReveal from '@components/home/scroll-reveal/ScrollReveal.astro';
 import { SECTION_COMPONENTS } from '@components/home/section-components';
 import SectionMarker from '@components/home/section-marker/SectionMarker.astro';
+import SmoothScroll from '@components/home/smooth-scroll/SmoothScroll.astro';
 import SiteFooter from '@components/home/SiteFooter.astro';
 import TitleBlock from '@components/home/TitleBlock.astro';
 import { getBuildDate } from '@core/date/get-build-date';
@@ -37,6 +38,8 @@ const visibleSections = getVisibleSections(entryCounts, SECTION_SETTINGS);
 ---
 
 <BaseLayout locale={locale} title={t.pageTitle} description={t.pageDescription} hasAlternates>
+  <ScrollReveal />
+  <SmoothScroll />
   <Background3D />
   <SectionMarker locale={locale} />
   <main id="content">
@@ -47,5 +50,4 @@ const visibleSections = getVisibleSections(entryCounts, SECTION_SETTINGS);
     })}
   </main>
   <SiteFooter locale={locale} revisionDate={getBuildDate()} />
-  <ScrollReveal />
 </BaseLayout>

@@ -1,8 +1,7 @@
 import {
   BufferGeometry,
   Color,
-  Float32BufferAttribute,
-  Group,
+  BufferAttribute,
   LineBasicMaterial,
   LineSegments,
   PerspectiveCamera,
@@ -10,41 +9,56 @@ import {
   WebGLRenderer,
 } from 'three';
 
-import { HERO_ELEMENT_ID, SECTION_ORDER } from '@core/constants/site.constants';
-import { watchCurrentSection } from '@core/sections/watch-current-section';
-import { createAmbientLayer } from './background-3d.ambient';
+import { createAmbientLayer, poseAmbientLayer, recolorAmbientLayer } from './background-3d.ambient';
 import type { AmbientLayer } from './background-3d.ambient';
-import { BackgroundShape } from './background-3d.enum';
 import {
-  AMBIENT_ROTATION_RATIO,
+  BOB_HEIGHT,
+  BOB_SPEED,
   CAMERA_DISTANCE,
   CAMERA_FAR,
   CAMERA_FIELD_OF_VIEW,
   CAMERA_NEAR,
-  FADE_SPEED,
-  HERO_SHAPE,
   LINE_OPACITY,
   MAX_FRAME_SECONDS,
   MAX_PIXEL_RATIO,
-  ROTATION_SPEED,
-  SHAPE_BY_SECTION,
+  MORPH_EPSILON,
+  PORTRAIT_SCALE,
+  ROLL_ANGLE,
+  ROLL_SPEED,
+  SCROLL_LAG_SECONDS,
+  SCROLL_RISE,
+  SCROLL_SPIN_TURNS,
+  SHAPE_SEQUENCE,
   SHAPE_TILT,
+  SWAY_ANGLE,
+  SWAY_SPEED,
+  TURN_ANGLE,
+  TURN_SPEED,
 } from './background-3d.constants';
-import { buildShapePositions } from './background-3d.shapes';
+import { readScrollProgress, writeMorph } from './background-3d.morph';
+import { buildMorphTargets } from './background-3d.shapes';
 
 const ACCENT_PROPERTY = '--color-accent';
 const DARK_SCHEME_QUERY = '(prefers-color-scheme: dark)';
+const READY_ATTRIBUTE = 'data-background-ready';
 const MS_PER_SECOND = 1000;
+const FULL_TURN = Math.PI * 2;
 
 interface BackgroundScene {
+  readonly doc: Document;
   readonly renderer: WebGLRenderer;
   readonly scene: Scene;
   readonly camera: PerspectiveCamera;
-  readonly group: Group;
+  readonly shape: LineSegments<BufferGeometry, LineBasicMaterial>;
+  readonly positions: BufferAttribute;
+  /** The array behind `positions` (BufferAttribute keeps the reference; the Float32 variant would copy it). */
+  readonly vertices: Float32Array;
+  readonly targets: readonly Float32Array[];
   readonly ambient: AmbientLayer;
-  readonly layers: ReadonlyMap<BackgroundShape, LineSegments<BufferGeometry, LineBasicMaterial>>;
-  activeShape: BackgroundShape;
-  /** Timestamp of the previous animation frame; undefined right after (re)starting. */
+  /** Scroll progress the morph is currently drawn at; it trails the real one. */
+  shownProgress: number;
+  /** Seconds of animation so far; drives the idle spin, sway and bob. */
+  elapsed: number;
   lastFrameTime: number | undefined;
 }
 
@@ -53,21 +67,24 @@ function readAccentColor(doc: Document): Color {
   return new Color(value);
 }
 
-function createLayer(
-  shape: BackgroundShape,
-  color: Color,
-): LineSegments<BufferGeometry, LineBasicMaterial> {
+interface Shape {
+  readonly shape: LineSegments<BufferGeometry, LineBasicMaterial>;
+  readonly positions: BufferAttribute;
+  readonly vertices: Float32Array;
+}
+
+function createShape(targets: readonly Float32Array[], color: Color): Shape {
+  const vertices = new Float32Array(targets[0] ?? []);
+  const positions = new BufferAttribute(vertices, 3);
   const geometry = new BufferGeometry();
-  geometry.setAttribute('position', new Float32BufferAttribute(buildShapePositions(shape), 3));
+  geometry.setAttribute('position', positions);
   const material = new LineBasicMaterial({
     color,
     transparent: true,
-    opacity: 0,
+    opacity: LINE_OPACITY,
     depthWrite: false,
   });
-  const layer = new LineSegments(geometry, material);
-  layer.visible = false;
-  return layer;
+  return { shape: new LineSegments(geometry, material), positions, vertices };
 }
 
 function createScene(canvas: HTMLCanvasElement, doc: Document): BackgroundScene {
@@ -75,26 +92,24 @@ function createScene(canvas: HTMLCanvasElement, doc: Document): BackgroundScene 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
   const camera = new PerspectiveCamera(CAMERA_FIELD_OF_VIEW, 1, CAMERA_NEAR, CAMERA_FAR);
   camera.position.z = CAMERA_DISTANCE;
-  const group = new Group();
-  group.rotation.x = SHAPE_TILT;
   const color = readAccentColor(doc);
-  const layers = new Map(
-    Object.values(BackgroundShape).map((shape) => [shape, createLayer(shape, color)] as const),
-  );
-  layers.forEach((layer) => group.add(layer));
-  const scene = new Scene();
-  scene.add(group);
+  const targets = buildMorphTargets(SHAPE_SEQUENCE);
+  const { shape, positions, vertices } = createShape(targets, color);
   const ambient = createAmbientLayer(color);
-  ambient.group.rotation.x = SHAPE_TILT;
-  scene.add(ambient.group);
+  const scene = new Scene();
+  scene.add(shape, ambient.group);
   return {
+    doc,
     renderer,
     scene,
     camera,
-    group,
+    shape,
+    positions,
+    vertices,
+    targets,
     ambient,
-    layers,
-    activeShape: HERO_SHAPE,
+    shownProgress: Number.NaN,
+    elapsed: 0,
     lastFrameTime: undefined,
   };
 }
@@ -104,75 +119,72 @@ function resize(background: BackgroundScene): void {
   background.renderer.setSize(width, height, false);
   background.camera.aspect = width / height;
   background.camera.updateProjectionMatrix();
+  const scale = width < height ? PORTRAIT_SCALE : 1;
+  background.shape.scale.setScalar(scale);
+  background.ambient.group.scale.setScalar(scale);
 }
 
-function recolor(background: BackgroundScene, doc: Document): void {
-  const color = readAccentColor(doc);
-  background.layers.forEach((layer) => layer.material.color.copy(color));
-  background.ambient.materials.forEach((material) => material.color.copy(color));
+function recolor(background: BackgroundScene): void {
+  const color = readAccentColor(background.doc);
+  background.shape.material.color.copy(color);
+  recolorAmbientLayer(background.ambient, color);
 }
 
-/** Moves every layer's opacity toward its target; a step of Infinity snaps it. */
-function fadeLayers(background: BackgroundScene, step: number): void {
-  background.layers.forEach((layer, shape) => {
-    const target = shape === background.activeShape ? LINE_OPACITY : 0;
-    const current = layer.material.opacity;
-    const next =
-      current < target ? Math.min(target, current + step) : Math.max(target, current - step);
-    layer.material.opacity = next;
-    layer.visible = next > 0;
-  });
+/** Redraws the morph only when it has visibly moved. */
+function morphTo(background: BackgroundScene, progress: number): void {
+  if (Math.abs(progress - background.shownProgress) < MORPH_EPSILON) {
+    return;
+  }
+  background.shownProgress = progress;
+  writeMorph(background.vertices, background.targets, progress);
+  background.positions.needsUpdate = true;
 }
 
-function renderFrame(background: BackgroundScene): void {
+/** Idle drift plus a turn and rise tied to how far down the page the reader is. */
+function poseShape(background: BackgroundScene): void {
+  const { elapsed, shownProgress: progress } = background;
+  background.shape.rotation.set(
+    SHAPE_TILT * (1 - progress) + Math.sin(elapsed * SWAY_SPEED) * SWAY_ANGLE,
+    Math.sin(elapsed * TURN_SPEED) * TURN_ANGLE + progress * SCROLL_SPIN_TURNS * FULL_TURN,
+    Math.cos(elapsed * ROLL_SPEED) * ROLL_ANGLE,
+  );
+  background.shape.position.y = Math.sin(elapsed * BOB_SPEED) * BOB_HEIGHT + progress * SCROLL_RISE;
+}
+
+function render(background: BackgroundScene): void {
+  poseShape(background);
+  poseAmbientLayer(background.ambient, background.elapsed);
   background.renderer.render(background.scene, background.camera);
 }
 
-function animate(background: BackgroundScene, time: number): void {
-  const elapsed =
-    background.lastFrameTime === undefined ? 0 : (time - background.lastFrameTime) / MS_PER_SECOND;
-  background.lastFrameTime = time;
-  const seconds = Math.min(elapsed, MAX_FRAME_SECONDS);
-  fadeLayers(background, FADE_SPEED * LINE_OPACITY * seconds);
-  background.group.rotation.y += ROTATION_SPEED * seconds;
-  background.ambient.group.rotation.y += ROTATION_SPEED * AMBIENT_ROTATION_RATIO * seconds;
-  renderFrame(background);
-}
-
-function trackedElements(doc: Document): Map<Element, BackgroundShape> {
-  const tracked = new Map<Element, BackgroundShape>();
-  const hero = doc.getElementById(HERO_ELEMENT_ID);
-  if (hero !== null) {
-    tracked.set(hero, HERO_SHAPE);
+/** Frame-rate independent easing toward the scroll position. */
+function catchUp(current: number, target: number, seconds: number): number {
+  if (Number.isNaN(current)) {
+    return target;
   }
-  SECTION_ORDER.forEach((sectionId) => {
-    const section = doc.getElementById(sectionId);
-    if (section !== null) {
-      tracked.set(section, SHAPE_BY_SECTION[sectionId]);
-    }
-  });
-  return tracked;
+  return current + (target - current) * (1 - Math.exp(-seconds / SCROLL_LAG_SECONDS));
 }
 
-function followCurrentSection(doc: Document, onShape: (shape: BackgroundShape) => void): void {
-  const tracked = trackedElements(doc);
-  watchCurrentSection(doc, [...tracked.keys()], (element) => {
-    const shape = tracked.get(element);
-    if (shape !== undefined) {
-      onShape(shape);
-    }
-  });
+function animate(background: BackgroundScene, time: number): void {
+  const last = background.lastFrameTime;
+  background.lastFrameTime = time;
+  const seconds =
+    last === undefined ? 0 : Math.min((time - last) / MS_PER_SECOND, MAX_FRAME_SECONDS);
+  background.elapsed += seconds;
+  const target = readScrollProgress(background.doc);
+  morphTo(background, catchUp(background.shownProgress, target, seconds));
+  render(background);
 }
 
-function startMotion(background: BackgroundScene, doc: Document): void {
+function startMotion(background: BackgroundScene): void {
   const run = (): void => {
     background.lastFrameTime = undefined;
     background.renderer.setAnimationLoop((time) => {
       animate(background, time);
     });
   };
-  doc.addEventListener('visibilitychange', () => {
-    if (doc.hidden) {
+  background.doc.addEventListener('visibilitychange', () => {
+    if (background.doc.hidden) {
       background.renderer.setAnimationLoop(null);
     } else {
       run();
@@ -181,10 +193,23 @@ function startMotion(background: BackgroundScene, doc: Document): void {
   run();
 }
 
+/** Reduced motion: no drift and no lag; the shape simply matches the scroll position. */
+function startStill(background: BackgroundScene): void {
+  const draw = (): void => {
+    morphTo(background, readScrollProgress(background.doc));
+    render(background);
+  };
+  window.addEventListener('scroll', draw, { passive: true });
+  window.addEventListener('resize', draw);
+  window.matchMedia(DARK_SCHEME_QUERY).addEventListener('change', draw);
+  draw();
+}
+
 /**
- * Draws a slowly turning wireframe behind the page that cross-fades to a new
- * shape as each section scrolls into the middle of the viewport. With reduced
- * motion the shape swaps without fading and never rotates.
+ * Draws one wireframe behind the page that morphs through SHAPE_SEQUENCE as
+ * the reader scrolls (hexagon torus, neural networks, hexagon sphere, cat),
+ * trailing the scroll slightly so the change feels fluid, inside slowly
+ * turning orbit rings and dust.
  */
 export function startBackgroundScene(
   canvas: HTMLCanvasElement,
@@ -192,32 +217,17 @@ export function startBackgroundScene(
   prefersReducedMotion: boolean,
 ): void {
   const background = createScene(canvas, doc);
-  const redrawStill = (): void => {
-    fadeLayers(background, Number.POSITIVE_INFINITY);
-    renderFrame(background);
-  };
   resize(background);
   window.addEventListener('resize', () => {
     resize(background);
-    if (prefersReducedMotion) {
-      renderFrame(background);
-    }
   });
   window.matchMedia(DARK_SCHEME_QUERY).addEventListener('change', () => {
-    recolor(background, doc);
-    if (prefersReducedMotion) {
-      renderFrame(background);
-    }
-  });
-  followCurrentSection(doc, (shape) => {
-    background.activeShape = shape;
-    if (prefersReducedMotion) {
-      redrawStill();
-    }
+    recolor(background);
   });
   if (prefersReducedMotion) {
-    redrawStill();
+    startStill(background);
   } else {
-    startMotion(background, doc);
+    startMotion(background);
   }
+  canvas.setAttribute(READY_ATTRIBUTE, '');
 }

@@ -1,9 +1,12 @@
 ---
 import { Image } from 'astro:assets';
 
-import avatar from '../../assets/avatar-terracotta.jpg';
+import avatar from '../../assets/avatar-terracotta.png';
+import TerminalLink from '@components/ui/TerminalLink.astro';
 import { HERO_ELEMENT_ID, HERO_MARKER } from '@core/constants/site.constants';
 import type { Locale } from '@core/enums/locale.enum';
+import { SectionId } from '@core/enums/section-id.enum';
+import { revealDelay } from '@core/motion/reveal-delay';
 import type { Profile } from '@core/types/profile.types';
 import { getTranslations } from '@i18n/i18n';
 
@@ -11,6 +14,12 @@ interface Props {
   readonly locale: Locale;
   readonly profile: Profile;
 }
+
+/** Largest rendered size of the photo in CSS pixels (7:9, like a print). */
+const AVATAR_WIDTH = 224;
+const AVATAR_HEIGHT = 288;
+/** The hatched texture turns to mush at the default quality. */
+const AVATAR_QUALITY = 90;
 
 const { locale, profile } = Astro.props;
 const t = getTranslations(locale);
@@ -24,38 +33,45 @@ const fullName = `${profile.givenName} ${profile.familyName}`;
   data-marker={HERO_MARKER}
 >
   <div class="title-block__text">
-    <p class="title-block__label">
+    <p class="title-block__label" data-reveal>
       {HERO_MARKER} — {fullName}
     </p>
-    <h1 class="title-block__name" id="title-block-name">
+    <h1 class="title-block__name" id="title-block-name" data-reveal style={revealDelay(1)}>
       {profile.givenName}
       <br />
       {profile.familyName}
     </h1>
-    <p class="title-block__author">{t.authorLine}</p>
-    <p class="title-block__abstract">
+    <p class="title-block__author" data-reveal style={revealDelay(2)}>
+      {t.authorLine}
+    </p>
+    <p class="title-block__abstract" data-reveal style={revealDelay(3)}>
       <em class="title-block__abstract-label">{t.abstractLabel}</em> {profile.abstract[locale]}
     </p>
+    <p class="title-block__links" data-reveal style={revealDelay(4)}>
+      <TerminalLink href={`#${SectionId.Contact}`} label={t.contactShortcutLabel} />
+    </p>
   </div>
-  <figure class="title-block__avatar">
-    <div class="title-block__mount">
-      <Image
-        src={avatar}
-        alt={t.avatarAlt}
-        widths={[240, 480]}
-        sizes="(min-width: 1100px) 14.5rem, 12.5rem"
-        loading="eager"
-      />
-    </div>
-    <figcaption class="title-block__caption">{t.avatarCaption}</figcaption>
-  </figure>
+  <div class="title-block__avatar" data-reveal style={revealDelay(3)}>
+    <Image
+      class="title-block__photo"
+      src={avatar}
+      alt={t.avatarAlt}
+      width={AVATAR_WIDTH}
+      height={AVATAR_HEIGHT}
+      fit="cover"
+      densities={[1, 2, 3]}
+      quality={AVATAR_QUALITY}
+      loading="eager"
+      fetchpriority="high"
+    />
+  </div>
 </section>
 
 <style>
   .title-block {
     display: grid;
     align-content: center;
-    gap: var(--space-6);
+    gap: var(--space-7);
     min-block-size: var(--layout-hero-min-height);
     padding-block: var(--layout-marker-clearance) var(--space-7);
     padding-inline: var(--layout-offset) var(--space-gutter);
@@ -78,45 +94,40 @@ const fullName = `${profile.givenName} ${profile.familyName}`;
 
   .title-block__author {
     color: var(--color-muted);
-    font-size: var(--type-label-size);
+    font-size: var(--type-small-size);
     margin-block-end: var(--space-6);
   }
 
   .title-block__abstract {
     background: var(--color-paper);
     border: var(--line-width) solid var(--color-rule);
+    color: var(--color-muted);
     font-size: var(--type-small-size);
     max-inline-size: var(--layout-column);
     padding: var(--space-5);
   }
 
   .title-block__abstract-label {
+    color: var(--color-ink);
     font-family: var(--font-family-serif);
+    font-size: var(--type-label-size);
+  }
+
+  .title-block__links {
+    margin-block-start: var(--space-6);
   }
 
   .title-block__avatar {
-    inline-size: var(--layout-avatar);
-  }
-
-  .title-block__mount {
-    background: var(--color-mount);
     border: var(--line-width) solid var(--color-rule);
-    padding: var(--space-2) var(--space-2) var(--layout-avatar-strip);
+    inline-size: var(--layout-avatar);
+    padding: var(--layout-avatar-padding);
   }
 
-  .title-block__mount img {
-    aspect-ratio: 2 / 3;
+  .title-block__photo {
+    aspect-ratio: var(--layout-avatar-ratio);
     block-size: auto;
     inline-size: 100%;
     object-fit: cover;
-    object-position: 50% 30%;
-  }
-
-  .title-block__caption {
-    color: var(--color-muted);
-    font-size: var(--type-small-size);
-    line-height: var(--type-small-leading);
-    margin-block-start: var(--space-2);
   }
 
   @media (width >= 1100px) {

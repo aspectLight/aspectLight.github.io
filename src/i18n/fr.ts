@@ -17,7 +17,7 @@ export const FR: Translations = {
   abstractLabel: 'Résumé.',
   avatarAlt:
     'Illustration : un chat noir vu de dos, assis devant un mur d’hexagones terre cuite et sable, à la texture hachurée.',
-  avatarCaption: 'Fig. 0 — Avatar : un chat sur des hexagones, hachuré.',
+  contactShortcutLabel: './contact',
   sectionTitles: {
     [SectionId.Education]: 'Formation',
     [SectionId.Projects]: 'Projets',

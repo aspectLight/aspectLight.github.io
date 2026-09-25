@@ -1,6 +1,8 @@
 ---
 import Section from '@components/ui/Section.astro';
+import TerminalLink from '@components/ui/TerminalLink.astro';
 import { SectionId } from '@core/enums/section-id.enum';
+import { revealDelay } from '@core/motion/reveal-delay';
 import { PROFILE } from '@data/profile.data';
 import { getTranslations } from '@i18n/i18n';
 import type { SectionProps } from '../section-props.types';
@@ -9,18 +11,24 @@ type Props = SectionProps;
 
 const { locale, number } = Astro.props;
 const t = getTranslations(locale);
+const links = [
+  { href: `mailto:${PROFILE.email}`, label: PROFILE.email },
+  { href: PROFILE.linkedInUrl, label: t.linkedInLabel },
+  { href: PROFILE.gitHubUrl, label: t.gitHubLabel },
+];
 ---
 
 <Section id={SectionId.Contact} number={number} title={t.sectionTitles[SectionId.Contact]}>
-  <p class="contact__lead">{t.contactLead}</p>
-  <p class="contact__email">
-    <a href={`mailto:${PROFILE.email}`}>{PROFILE.email}</a>
+  <p class="contact__lead" data-reveal style={revealDelay(1)}>
+    {t.contactLead}
   </p>
-  <p class="contact__links">
-    <a href={PROFILE.linkedInUrl}>{t.linkedInLabel}</a>
-    <span aria-hidden="true">·</span>
-    <a href={PROFILE.gitHubUrl}>{t.gitHubLabel}</a>
-  </p>
+  <ul class="contact__links">
+    {links.map((link, index) => (
+      <li data-reveal style={revealDelay(index + 2)}>
+        <TerminalLink href={link.href} label={link.label} />
+      </li>
+    ))}
+  </ul>
 </Section>
 
 <style>
@@ -28,17 +36,11 @@ const t = getTranslations(locale);
     font-family: var(--font-family-serif);
     font-size: var(--type-lede-size);
     line-height: var(--type-lede-leading);
-    margin-block-end: var(--space-4);
-  }
-
-  .contact__email {
-    margin-block-end: var(--space-3);
-    overflow-wrap: anywhere;
+    margin-block-end: var(--space-5);
   }
 
   .contact__links {
-    display: flex;
+    display: grid;
     gap: var(--space-2);
-    font-size: var(--type-label-size);
   }
 </style>

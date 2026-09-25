@@ -1,6 +1,8 @@
 ---
+import type { SectionId } from '@core/enums/section-id.enum';
+
 interface Props {
-  readonly id: string;
+  readonly id: SectionId;
   readonly number: number;
   readonly title: string;
 }
@@ -10,18 +12,24 @@ const headingId = `${id}-heading`;
 const marker = `§ ${String(number)}`;
 ---
 
-<section class="section" id={id} aria-labelledby={headingId} data-marker={marker} data-reveal>
-  <h2 class="section__heading" id={headingId}>
-    {marker} — {title}
-  </h2>
+<section class="section" id={id} aria-labelledby={headingId} data-marker={marker}>
+  <header class="section__header" data-reveal>
+    <h2 class="section__heading" id={headingId}>
+      {marker} — {title}
+    </h2>
+    <hr class="section__rule" />
+  </header>
   <slot />
 </section>
 
 <style>
   .section {
-    border-block-start: var(--line-width) solid var(--color-rule);
     padding-block: var(--space-section);
     padding-inline: var(--layout-offset) var(--space-gutter);
+  }
+
+  .section__header {
+    margin-block-end: var(--space-6);
   }
 
   .section__heading {
@@ -30,6 +38,13 @@ const marker = `§ ${String(number)}`;
     font-weight: 400;
     letter-spacing: var(--type-label-tracking);
     line-height: var(--type-label-leading);
-    margin-block-end: var(--space-6);
+    margin-block-end: var(--space-2);
+  }
+
+  .section__rule {
+    block-size: var(--line-width);
+    background: var(--color-rule);
+    border: 0;
+    margin: 0;
   }
 </style>

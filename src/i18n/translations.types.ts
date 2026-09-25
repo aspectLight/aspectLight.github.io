@@ -11,7 +11,8 @@ export interface Translations {
   readonly authorLine: string;
   readonly abstractLabel: string;
   readonly avatarAlt: string;
-  readonly avatarCaption: string;
+  /** Terminal-style shortcut from the title block down to the contact section. */
+  readonly contactShortcutLabel: string;
   readonly sectionTitles: Readonly<Record<SectionId, string>>;
   readonly emptyProjects: string;
   readonly emptyCertifications: string;

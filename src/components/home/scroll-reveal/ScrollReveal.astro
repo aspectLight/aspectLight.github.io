@@ -1,3 +1,26 @@
+<!--
+  Render this before the page content. The inline script runs while the page is
+  still parsing, so elements are hidden before the first paint instead of
+  flashing in and out. If the bundled script never starts (blocked, offline),
+  the fallback un-hides everything after a few seconds. Attribute names must
+  match scroll-reveal.client.ts.
+-->
+<script is:inline>
+  (function () {
+    var root = document.documentElement;
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion || !('IntersectionObserver' in window)) {
+      return;
+    }
+    root.setAttribute('data-reveal-ready', '');
+    window.setTimeout(function () {
+      if (!root.hasAttribute('data-reveal-active')) {
+        root.removeAttribute('data-reveal-ready');
+      }
+    }, 3000);
+  })();
+</script>
+
 <script>
   import { initScrollReveal } from './scroll-reveal.client';
 

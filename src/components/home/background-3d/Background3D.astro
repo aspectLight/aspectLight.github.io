@@ -11,8 +11,21 @@
     block-size: 100vh;
     inline-size: 100vw;
     inset: 0;
+    opacity: 0;
     pointer-events: none;
     position: fixed;
+    transition: opacity var(--motion-background-fade) var(--motion-ease-out);
     z-index: -1;
+  }
+
+  /* Set by the scene once its first frame is drawn, so the shape fades in instead of popping. */
+  .background-3d[data-background-ready] {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .background-3d {
+      transition: none;
+    }
   }
 </style>

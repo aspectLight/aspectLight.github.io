@@ -1,20 +1,21 @@
 const REVEAL_SELECTOR = '[data-reveal]';
 const READY_ATTRIBUTE = 'data-reveal-ready';
+const ACTIVE_ATTRIBUTE = 'data-reveal-active';
 const REVEALED_ATTRIBUTE = 'data-revealed';
-const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-/** Fraction of a section that must be visible before it fades in. */
-const REVEAL_THRESHOLD = 0.12;
+/** Elements start fading in once they are this far inside the bottom of the viewport. */
+const REVEAL_ROOT_MARGIN = '0px 0px -60px 0px';
 
 /**
- * Fades sections up as they scroll into view. The hiding CSS only applies once
- * READY_ATTRIBUTE is set here, so without JavaScript nothing is ever hidden.
+ * Fades, lifts and un-blurs each `[data-reveal]` element the first time it
+ * scrolls into view. The hidden state is switched on by the inline script in
+ * ScrollReveal.astro; this only runs when that script decided motion is wanted.
  */
 export function initScrollReveal(doc: Document): void {
-  const targets = doc.querySelectorAll<HTMLElement>(REVEAL_SELECTOR);
-  const prefersReducedMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
-  if (targets.length === 0 || prefersReducedMotion || !('IntersectionObserver' in window)) {
+  const root = doc.documentElement;
+  if (!root.hasAttribute(READY_ATTRIBUTE)) {
     return;
   }
+  root.setAttribute(ACTIVE_ATTRIBUTE, '');
   const observer = new IntersectionObserver(
     (entries) => {
       entries
@@ -24,10 +25,9 @@ export function initScrollReveal(doc: Document): void {
           observer.unobserve(entry.target);
         });
     },
-    { threshold: REVEAL_THRESHOLD },
+    { rootMargin: REVEAL_ROOT_MARGIN },
   );
-  targets.forEach((target) => {
+  doc.querySelectorAll(REVEAL_SELECTOR).forEach((target) => {
     observer.observe(target);
   });
-  doc.documentElement.setAttribute(READY_ATTRIBUTE, '');
 }

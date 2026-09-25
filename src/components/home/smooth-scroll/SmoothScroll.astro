@@ -1,0 +1,21 @@
+<script>
+  import { initSmoothScroll } from './smooth-scroll.client';
+
+  initSmoothScroll();
+</script>
+
+<style is:global>
+  /* Rules Lenis needs; see its README. Native smooth scrolling would fight it. */
+  html.lenis,
+  html.lenis body {
+    block-size: auto;
+  }
+
+  html.lenis {
+    scroll-behavior: auto;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: clip;
+  }
+</style>
