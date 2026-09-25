@@ -1,13 +1,13 @@
 ---
 import CurrentFocus from '@components/home/current-focus/CurrentFocus.astro';
-import Epigraph from '@components/home/Epigraph.astro';
+import Epigraph from '@components/home/epigraph/Epigraph.astro';
 import Background3D from '@components/home/background-3d/Background3D.astro';
 import ScrollReveal from '@components/home/scroll-reveal/ScrollReveal.astro';
-import { SECTION_COMPONENTS } from '@components/home/section-components';
+import { SECTION_COMPONENTS } from '@components/home/section-registry/section-components';
 import SectionMarker from '@components/home/section-marker/SectionMarker.astro';
 import SmoothScroll from '@components/home/smooth-scroll/SmoothScroll.astro';
-import SiteFooter from '@components/home/SiteFooter.astro';
-import TitleBlock from '@components/home/TitleBlock.astro';
+import SiteFooter from '@components/home/site-footer/SiteFooter.astro';
+import TitleBlock from '@components/home/title-block/TitleBlock.astro';
 import { getBuildDate } from '@core/date/get-build-date';
 import type { Locale } from '@core/enums/locale.enum';
 import { SectionId } from '@core/enums/section-id.enum';

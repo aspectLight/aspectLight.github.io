@@ -1,10 +1,10 @@
 ---
-import Section from '@components/ui/Section.astro';
+import Section from '@components/ui/section/Section.astro';
 import { SectionId } from '@core/enums/section-id.enum';
 import { revealDelay } from '@core/motion/reveal-delay';
 import { PROFILE } from '@data/profile.data';
 import { getTranslations } from '@i18n/i18n';
-import type { SectionProps } from '../section-props.types';
+import type { SectionProps } from '../section-registry/section-props.types';
 import { CONTACT_ICON_PATHS, ICON_VIEWBOX_SIZE } from './contact-icons.constants';
 import { ContactMethod } from './contact-method.enum';
 

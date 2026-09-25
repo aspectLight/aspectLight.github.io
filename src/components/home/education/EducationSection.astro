@@ -1,12 +1,12 @@
 ---
-import EntryReference from '@components/ui/EntryReference.astro';
-import LossCurveWatermark from '@components/home/watermarks/LossCurveWatermark.astro';
-import Section from '@components/ui/Section.astro';
+import EntryReference from '@components/ui/entry-reference/EntryReference.astro';
+import LossCurveWatermark from '@components/home/loss-curve-watermark/LossCurveWatermark.astro';
+import Section from '@components/ui/section/Section.astro';
 import { SectionId } from '@core/enums/section-id.enum';
 import { revealDelay } from '@core/motion/reveal-delay';
 import { EDUCATION } from '@data/education.data';
 import { getTranslations } from '@i18n/i18n';
-import type { SectionProps } from '../section-props.types';
+import type { SectionProps } from '../section-registry/section-props.types';
 import { formatEducationPeriod } from './education.format';
 
 type Props = SectionProps;
