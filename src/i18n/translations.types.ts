@@ -13,13 +13,11 @@ export interface Translations {
   readonly avatarAlt: string;
   /** Terminal-style shortcut from the title block down to the contact section. */
   readonly contactShortcutLabel: string;
+  /** Heading of the short list of what is being worked on now. */
+  readonly currentFocusLabel: string;
   readonly sectionTitles: Readonly<Record<SectionId, string>>;
   readonly emptyProjects: string;
   readonly emptyCertifications: string;
-  /** Accessible name of the "Feature xₙ." row. */
-  readonly featureListLabel: string;
-  /** "Feature" in "Feature x₁." */
-  readonly featureLabel: string;
   /** Opens a set definition: "Let D = { … }". */
   readonly setIntro: string;
   /** Annotation after the coursework set: "← coursework". */

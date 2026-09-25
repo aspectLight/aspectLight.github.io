@@ -6,7 +6,7 @@ import type { Translations } from '@i18n/translations.types';
 export const FR: Translations = {
   pageTitle: 'Sami Benabbou',
   pageDescription:
-    'Étudiant au baccalauréat en génie logiciel, orientation intelligence artificielle et sciences des données ; diplomation prévue en décembre 2027.',
+    'Étudiant en génie logiciel à Polytechnique Montréal : optimisation combinatoire, algorithmes de recherche heuristique et sécurité de l’IA.',
   skipToContent: 'Aller au contenu',
   languageNavLabel: 'Langue',
   localeLabels: {
@@ -18,6 +18,7 @@ export const FR: Translations = {
   avatarAlt:
     'Illustration : un chat noir vu de dos, assis devant un mur d’hexagones terre cuite et sable, à la texture hachurée.',
   contactShortcutLabel: './contact',
+  currentFocusLabel: 'En ce moment',
   sectionTitles: {
     [SectionId.Education]: 'Formation',
     [SectionId.Projects]: 'Projets',
@@ -26,8 +27,6 @@ export const FR: Translations = {
   },
   emptyProjects: 'Aucun projet déployé pour l’instant.',
   emptyCertifications: 'Aucune certification enregistrée pour l’instant.',
-  featureListLabel: 'Chiffres clés',
-  featureLabel: 'Variable',
   setIntro: 'Soit',
   courseworkLabel: 'cours pertinents',
   expectedLabel: '(prévue)',

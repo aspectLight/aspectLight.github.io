@@ -3,7 +3,6 @@ import EmptyState from '@components/ui/EmptyState.astro';
 import EntryReference from '@components/ui/EntryReference.astro';
 import AttentionWatermark from '@components/home/watermarks/AttentionWatermark.astro';
 import Section from '@components/ui/Section.astro';
-import { formatMonth } from '@core/date/format-month';
 import { SectionId } from '@core/enums/section-id.enum';
 import { revealDelay } from '@core/motion/reveal-delay';
 import { PROJECTS } from '@data/projects.data';
@@ -27,14 +26,18 @@ const isEmpty = PROJECTS.length === 0;
           <EntryReference number={index + 1} />
           <div>
             <h3 class="project-entry__title">{project.title[locale]}</h3>
-            <p>{project.summary[locale]}</p>
             <p class="project-entry__meta">
-              {formatMonth(project.date, locale)} · {project.context[locale]}
+              {project.period[locale]} · {project.context[locale]}
             </p>
-            <p class="project-entry__links">
-              {project.sourceUrl !== undefined && <a href={project.sourceUrl}>{t.sourceLabel} ↗</a>}
-              {project.demoUrl !== undefined && <a href={project.demoUrl}>{t.demoLabel} ↗</a>}
-            </p>
+            <p class="project-entry__summary">{project.summary[locale]}</p>
+            {(project.sourceUrl !== undefined || project.demoUrl !== undefined) && (
+              <p class="project-entry__links">
+                {project.sourceUrl !== undefined && (
+                  <a href={project.sourceUrl}>{t.sourceLabel} ↗</a>
+                )}
+                {project.demoUrl !== undefined && <a href={project.demoUrl}>{t.demoLabel} ↗</a>}
+              </p>
+            )}
           </div>
         </li>
       ))}
@@ -65,6 +68,11 @@ const isEmpty = PROJECTS.length === 0;
   .project-entry__meta {
     color: var(--color-muted);
     font-size: var(--type-small-size);
+    margin-block: var(--space-1) var(--space-3);
+  }
+
+  .project-entry__summary {
+    max-inline-size: var(--layout-column);
   }
 
   .project-entry__links {

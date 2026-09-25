@@ -1,6 +1,6 @@
 ---
+import CurrentFocus from '@components/home/current-focus/CurrentFocus.astro';
 import Epigraph from '@components/home/Epigraph.astro';
-import FeatureList from '@components/home/features/FeatureList.astro';
 import Background3D from '@components/home/background-3d/Background3D.astro';
 import ScrollReveal from '@components/home/scroll-reveal/ScrollReveal.astro';
 import { SECTION_COMPONENTS } from '@components/home/section-components';
@@ -46,7 +46,7 @@ const visibleSections = getVisibleSections(entryCounts, SECTION_SETTINGS);
   <SectionMarker locale={locale} />
   <main id="content">
     <TitleBlock locale={locale} profile={PROFILE} />
-    <FeatureList locale={locale} />
+    <CurrentFocus locale={locale} />
     {visibleSections.map(({ id, number }) => {
       const SectionComponent = SECTION_COMPONENTS[id];
       return <SectionComponent locale={locale} number={number} />;

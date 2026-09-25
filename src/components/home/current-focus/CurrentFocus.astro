@@ -1,0 +1,66 @@
+---
+import type { Locale } from '@core/enums/locale.enum';
+import { revealDelay } from '@core/motion/reveal-delay';
+import { CURRENT_FOCUS } from '@data/focus.data';
+import { getTranslations } from '@i18n/i18n';
+
+interface Props {
+  readonly locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = getTranslations(locale);
+---
+
+<section class="current-focus" aria-labelledby="current-focus-label">
+  <h2 class="current-focus__label" id="current-focus-label" data-reveal>
+    {t.currentFocusLabel}
+  </h2>
+  <ul class="current-focus__list">
+    {CURRENT_FOCUS.map((item, index) => (
+      <li class="current-focus__item" data-reveal style={revealDelay(index + 1)}>
+        <span class="current-focus__topic">{item.topic[locale]}</span>
+        <span class="current-focus__detail">{item.detail[locale]}</span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .current-focus {
+    padding-block: 0 var(--space-section);
+    padding-inline: var(--layout-offset) var(--space-gutter);
+  }
+
+  .current-focus__label {
+    color: var(--color-accent);
+    font-size: var(--type-label-size);
+    font-weight: 400;
+    letter-spacing: var(--type-label-tracking);
+    margin-block-end: var(--space-4);
+  }
+
+  .current-focus__list {
+    display: grid;
+    gap: var(--space-4);
+    max-inline-size: var(--layout-column);
+  }
+
+  .current-focus__item {
+    border-inline-start: var(--line-width) solid var(--color-accent);
+    display: grid;
+    gap: var(--space-1);
+    padding-inline-start: var(--space-4);
+  }
+
+  .current-focus__topic {
+    font-family: var(--font-family-serif);
+    font-size: var(--type-entry-size);
+    line-height: var(--type-entry-leading);
+  }
+
+  .current-focus__detail {
+    color: var(--color-muted);
+    font-size: var(--type-small-size);
+  }
+</style>

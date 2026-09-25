@@ -5,7 +5,7 @@ import type { Translations } from '@i18n/translations.types';
 export const EN: Translations = {
   pageTitle: 'Sami Benabbou',
   pageDescription:
-    'Undergraduate in software engineering, artificial intelligence and data science track, graduating in December 2027.',
+    'Software engineering student at Polytechnique Montréal working on combinatorial optimization, search algorithms and AI security.',
   skipToContent: 'Skip to content',
   languageNavLabel: 'Language',
   localeLabels: {
@@ -17,6 +17,7 @@ export const EN: Translations = {
   avatarAlt:
     'Illustration: a black cat seen from behind, sitting in front of a wall of terracotta and sand hexagons, with a hand-hatched texture.',
   contactShortcutLabel: './contact',
+  currentFocusLabel: 'Currently',
   sectionTitles: {
     [SectionId.Education]: 'Education',
     [SectionId.Projects]: 'Projects',
@@ -25,8 +26,6 @@ export const EN: Translations = {
   },
   emptyProjects: 'No projects deployed yet.',
   emptyCertifications: 'No certifications logged yet.',
-  featureListLabel: 'Key figures',
-  featureLabel: 'Feature',
   setIntro: 'Let',
   courseworkLabel: 'coursework',
   expectedLabel: '(expected)',
