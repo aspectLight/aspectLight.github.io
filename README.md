@@ -1,5 +1,7 @@
 # aspectlight.github.io
 
+[![Deploy to GitHub Pages](https://github.com/aspectLight/aspectLight.github.io/actions/workflows/deploy.yml/badge.svg)](https://github.com/aspectLight/aspectLight.github.io/actions/workflows/deploy.yml)
+
 Source of my personal website, **[aspectlight.github.io](https://aspectlight.github.io)**, in English and [French](https://aspectlight.github.io/fr/).
 
 The cat behind the text is a neural network you can reconstruct: click any empty space on the page.
