@@ -1,0 +1,19 @@
+---
+import Watermark from '@components/ui/Watermark.astro';
+---
+
+<!-- Scaled dot-product attention, the core of a transformer. -->
+<Watermark>
+  <p class="attention">
+    Attention(Q, K, V) = softmax(QK<sup>⊤</sup> / √d<sub>k</sub>) V
+  </p>
+</Watermark>
+
+<style>
+  .attention {
+    font-family: var(--font-family-serif);
+    font-size: var(--type-entry-size);
+    font-style: italic;
+    white-space: nowrap;
+  }
+</style>

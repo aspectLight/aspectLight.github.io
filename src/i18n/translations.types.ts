@@ -16,6 +16,13 @@ export interface Translations {
   readonly sectionTitles: Readonly<Record<SectionId, string>>;
   readonly emptyProjects: string;
   readonly emptyCertifications: string;
+  /** Accessible name of the "Feature xₙ." row. */
+  readonly featureListLabel: string;
+  /** "Feature" in "Feature x₁." */
+  readonly featureLabel: string;
+  /** Opens a set definition: "Let D = { … }". */
+  readonly setIntro: string;
+  /** Annotation after the coursework set: "← coursework". */
   readonly courseworkLabel: string;
   readonly expectedLabel: string;
   readonly sourceLabel: string;
@@ -25,6 +32,8 @@ export interface Translations {
   readonly linkedInLabel: string;
   readonly gitHubLabel: string;
   readonly revisionLabel: string;
+  readonly epigraphQuote: string;
+  readonly epigraphAuthor: string;
   readonly notFoundMessage: string;
   readonly notFoundLinkLabel: string;
 }

@@ -15,6 +15,9 @@ const t = getTranslations(locale);
 <footer class="site-footer">
   <p>
     {t.revisionLabel} <time datetime={revisionDate}>{revisionDate}</time>
+    <span class="site-footer__token" aria-hidden="true">
+      &lt;eos&gt;
+    </span>
   </p>
 </footer>
 
@@ -25,5 +28,10 @@ const t = getTranslations(locale);
     font-size: var(--type-small-size);
     padding-block: var(--space-6);
     padding-inline: var(--layout-offset) var(--space-gutter);
+  }
+
+  .site-footer__token {
+    color: var(--color-accent);
+    margin-inline-start: var(--space-3);
   }
 </style>

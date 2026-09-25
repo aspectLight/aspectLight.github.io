@@ -1,5 +1,6 @@
 ---
 import EntryReference from '@components/ui/EntryReference.astro';
+import LossCurveWatermark from '@components/home/watermarks/LossCurveWatermark.astro';
 import Section from '@components/ui/Section.astro';
 import { SectionId } from '@core/enums/section-id.enum';
 import { revealDelay } from '@core/motion/reveal-delay';
@@ -15,6 +16,7 @@ const t = getTranslations(locale);
 ---
 
 <Section id={SectionId.Education} number={number} title={t.sectionTitles[SectionId.Education]}>
+  <LossCurveWatermark />
   <ol class="education-list">
     {EDUCATION.map((entry, index) => (
       <li class="education-entry" data-reveal style={revealDelay(index + 1)}>
@@ -25,8 +27,10 @@ const t = getTranslations(locale);
           <p class="education-entry__degree">{entry.track[locale]}</p>
           <p class="education-entry__period">{formatEducationPeriod(entry, locale)}</p>
           <p class="education-entry__coursework">
-            <span class="education-entry__coursework-label">{t.courseworkLabel}</span>
-            {entry.coursework[locale].join(' · ')}
+            <span class="education-entry__muted">{t.setIntro}</span>{' '}
+            <em class="education-entry__set">D</em>
+            <sub>train</sub> = {'{'} {entry.coursework[locale].join(', ')} {'}'}{' '}
+            <span class="education-entry__muted">← {t.courseworkLabel}</span>
           </p>
         </div>
       </li>
@@ -61,9 +65,13 @@ const t = getTranslations(locale);
     margin-block: var(--space-2) var(--space-4);
   }
 
-  .education-entry__coursework-label {
+  .education-entry__muted {
     color: var(--color-muted);
-    display: block;
-    font-size: var(--type-small-size);
+  }
+
+  .education-entry__set {
+    color: var(--color-accent);
+    font-family: var(--font-family-serif);
+    font-size: var(--type-label-size);
   }
 </style>

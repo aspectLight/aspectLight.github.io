@@ -88,6 +88,16 @@
     text-shadow: none;
   }
 
+  /* Read by screen readers, invisible on screen. */
+  .visually-hidden {
+    block-size: 1px;
+    clip-path: inset(50%);
+    inline-size: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+  }
+
   .skip-link {
     background: var(--color-paper);
     inset-block-start: var(--space-2);
