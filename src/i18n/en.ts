@@ -31,7 +31,7 @@ export const EN: Translations = {
   sourceLabel: 'Source',
   demoLabel: 'Demo',
   verifyLabel: 'Verify',
-  contactLead: 'Best way to prompt me: email.',
+  contactLead: 'The quickest way to reach me is by email.',
   linkedInLabel: 'LinkedIn',
   gitHubLabel: 'GitHub',
   revisionLabel: 'Checkpoint',

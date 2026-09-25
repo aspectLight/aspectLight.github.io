@@ -32,7 +32,7 @@ export const FR: Translations = {
   sourceLabel: 'Source',
   demoLabel: 'Démo',
   verifyLabel: 'Vérifier',
-  contactLead: 'Pour m’envoyer un prompt\u202F: un courriel.',
+  contactLead: 'Le plus simple pour me joindre, c’est par courriel.',
   linkedInLabel: 'LinkedIn',
   gitHubLabel: 'GitHub',
   revisionLabel: 'Point de contrôle',
