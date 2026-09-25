@@ -5,3 +5,10 @@ node_modules/
 .env.*
 .playwright-mcp/
 docs/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.playwright-cli/
