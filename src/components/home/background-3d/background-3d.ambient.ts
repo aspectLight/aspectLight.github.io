@@ -7,7 +7,7 @@ import {
   Points,
   PointsMaterial,
 } from 'three';
-import type { Color } from 'three';
+import type { CanvasTexture, Color } from 'three';
 
 import {
   DUST_BOX,
@@ -21,10 +21,10 @@ import {
   ORBIT_RINGS,
   ORBIT_SEGMENTS,
 } from './background-3d.constants';
+import { createRandom } from './background-3d.random';
 import type { OrbitRing } from './background-3d.types';
 
 const FULL_TURN = Math.PI * 2;
-const UINT32_RANGE = 2 ** 32;
 
 interface Orbit {
   readonly ring: OrbitRing;
@@ -35,17 +35,6 @@ export interface AmbientLayer {
   readonly group: Group;
   readonly orbits: readonly Orbit[];
   readonly dust: Points<BufferGeometry, PointsMaterial>;
-}
-
-/** mulberry32: a tiny seeded generator, so the dust never moves between visits. */
-function createRandom(seed: number): () => number {
-  let state = seed;
-  return () => {
-    state = (state + 0x6d2b79f5) | 0;
-    let mixed = Math.imul(state ^ (state >>> 15), 1 | state);
-    mixed = (mixed + Math.imul(mixed ^ (mixed >>> 7), 61 | mixed)) ^ mixed;
-    return ((mixed ^ (mixed >>> 14)) >>> 0) / UINT32_RANGE;
-  };
 }
 
 function geometryOf(positions: readonly number[]): BufferGeometry {
@@ -70,13 +59,14 @@ function createOrbit(ring: OrbitRing, color: Color): Orbit {
   return { ring, line };
 }
 
-function createDust(color: Color): Points<BufferGeometry, PointsMaterial> {
+function createDust(color: Color, dot: CanvasTexture): Points<BufferGeometry, PointsMaterial> {
   const random = createRandom(DUST_SEED);
   const positions = Array.from({ length: DUST_COUNT }, () =>
     DUST_BOX.map((extent) => (random() - 0.5) * extent),
   ).flat();
   const material = new PointsMaterial({
     color,
+    map: dot,
     size: DUST_SIZE,
     transparent: true,
     opacity: DUST_OPACITY,
@@ -86,9 +76,9 @@ function createDust(color: Color): Points<BufferGeometry, PointsMaterial> {
 }
 
 /** Thin orbit rings and drifting dust that sit around every shape. */
-export function createAmbientLayer(color: Color): AmbientLayer {
+export function createAmbientLayer(color: Color, dot: CanvasTexture): AmbientLayer {
   const orbits = ORBIT_RINGS.map((ring) => createOrbit(ring, color));
-  const dust = createDust(color);
+  const dust = createDust(color, dot);
   const group = new Group();
   orbits.forEach((orbit) => group.add(orbit.line));
   group.add(dust);

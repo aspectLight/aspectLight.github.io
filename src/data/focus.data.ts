@@ -20,9 +20,9 @@ export const CURRENT_FOCUS: readonly FocusItem[] = [
     },
     detail: {
       [Locale.En]:
-        'UPIR research internship with Prof. Thibaut Vidal, where optimization is used to audit and attack models.',
+        'UPIR research: how much of a model’s decision boundary its counterfactual explanations give away.',
       [Locale.Fr]:
-        'Stage de recherche UPIR avec le professeur Thibaut Vidal, où l’optimisation sert à auditer et à attaquer des modèles.',
+        'Recherche UPIR : ce que les explications contrefactuelles d’un modèle révèlent de sa frontière de décision.',
     },
   },
 ];

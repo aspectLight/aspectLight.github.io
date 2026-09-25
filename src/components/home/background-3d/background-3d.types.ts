@@ -2,9 +2,6 @@ export type Point3 = readonly [number, number, number];
 
 export type Point2 = readonly [number, number];
 
-/** A straight line between two points; shapes are lists of these. */
-export type Segment = readonly [Point3, Point3];
-
 /** A thin circle of the ambient layer that turns on its own axes. */
 export interface OrbitRing {
   readonly radius: number;
@@ -13,4 +10,13 @@ export interface OrbitRing {
   readonly baseRotation: Point3;
   /** Rotation speed around X, Y and Z, in radians per second. */
   readonly spin: Point3;
+}
+
+/** Neurons, directed synapses between them (by index) and the silhouette they sit in. */
+export interface CatNetwork {
+  readonly neurons: readonly Point3[];
+  readonly synapses: readonly (readonly [number, number])[];
+  /** Where signals start: the bottom layer. */
+  readonly inputs: readonly number[];
+  readonly outline: readonly Point3[];
 }

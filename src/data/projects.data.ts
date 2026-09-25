@@ -5,14 +5,14 @@ import type { ProjectEntry } from '@core/types/project.types';
 export const PROJECTS: readonly ProjectEntry[] = [
   {
     title: {
-      [Locale.En]: 'Research internship in trustworthy machine learning',
-      [Locale.Fr]: 'Stage de recherche en apprentissage automatique digne de confiance',
+      [Locale.En]: 'Reconstructing a hidden polygon from proximity queries',
+      [Locale.Fr]: 'Reconstruire un polygone caché à partir de requêtes de proximité',
     },
     summary: {
       [Locale.En]:
-        'A two-term undergraduate research internship in Prof. Thibaut Vidal’s group, which studies trustworthy machine learning through combinatorial optimization: using exact optimization to audit, explain and attack models. One of the group’s results shows that a trained random forest can give away the dataset it was trained on.',
+        'If a shape is hidden, can you rebuild it only by asking which point of its boundary is closest to a point you choose? The question comes from counterfactual explanations in AI: each one gives the smallest change that flips a model’s decision, so enough of them may give away the model’s whole decision boundary. I design algorithms that recover the vertices and edges of an unknown polygon with as few queries as possible, starting from the convex case and focusing on non-convex polygons, whose boundary has parts that are hard to reach. The work covers when exact reconstruction is possible, proofs of correctness and query counts, hard instances, and experiments comparing Euclidean and L1 distance.',
       [Locale.Fr]:
-        'Un stage de recherche de premier cycle sur deux trimestres dans le groupe du professeur Thibaut Vidal, qui étudie l’apprentissage automatique digne de confiance sous l’angle de l’optimisation combinatoire : se servir de l’optimisation exacte pour auditer, expliquer et attaquer des modèles. L’un des résultats du groupe montre qu’une forêt aléatoire entraînée peut révéler les données qui ont servi à l’entraîner.',
+        'Si une forme est cachée, peut-on la reconstruire en demandant seulement quel point de son contour est le plus proche d’un point choisi ? La question vient des explications contrefactuelles en IA : chacune donne la plus petite modification qui change la décision d’un modèle, si bien qu’en en demandant assez, on peut retrouver toute sa frontière de décision. Je conçois des algorithmes qui retrouvent les sommets et les arêtes d’un polygone inconnu avec le moins de requêtes possible, en partant du cas convexe pour aller vers les polygones non convexes, dont certaines parties du contour sont difficiles à atteindre. Le travail porte sur les conditions d’une reconstruction exacte, la preuve de correction et le nombre de requêtes, des cas difficiles, et des expériences comparant les distances euclidienne et L1.',
     },
     period: {
       [Locale.En]: 'Fall 2026 → Winter 2027 · in progress',
@@ -20,9 +20,9 @@ export const PROJECTS: readonly ProjectEntry[] = [
     },
     context: {
       [Locale.En]:
-        'UPIR research scholarship, Polytechnique Montréal · supervised by Prof. Thibaut Vidal',
+        'UPIR research scholarship, Polytechnique Montréal · supervised by Prof. Thibaut Vidal, Trustworthy Machine Learning',
       [Locale.Fr]:
-        'Bourse de recherche UPIR, Polytechnique Montréal · sous la supervision du professeur Thibaut Vidal',
+        'Bourse de recherche UPIR, Polytechnique Montréal · sous la supervision du professeur Thibaut Vidal, Trustworthy Machine Learning',
     },
   },
   {

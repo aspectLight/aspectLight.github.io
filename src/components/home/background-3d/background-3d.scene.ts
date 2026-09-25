@@ -1,16 +1,22 @@
+import type { CanvasTexture } from 'three';
 import {
+  BufferAttribute,
   BufferGeometry,
   Color,
-  BufferAttribute,
+  Group,
   LineBasicMaterial,
+  LineLoop,
   LineSegments,
   PerspectiveCamera,
+  Points,
+  PointsMaterial,
   Scene,
   WebGLRenderer,
 } from 'three';
 
 import { createAmbientLayer, poseAmbientLayer, recolorAmbientLayer } from './background-3d.ambient';
 import type { AmbientLayer } from './background-3d.ambient';
+import { createDotTexture } from './background-3d.dot';
 import {
   BOB_HEIGHT,
   BOB_SPEED,
@@ -18,46 +24,57 @@ import {
   CAMERA_FAR,
   CAMERA_FIELD_OF_VIEW,
   CAMERA_NEAR,
-  LINE_OPACITY,
   MAX_FRAME_SECONDS,
   MAX_PIXEL_RATIO,
-  MORPH_EPSILON,
+  NEURON_OPACITY,
+  NEURON_SIZE,
+  OUTLINE_OPACITY,
   PORTRAIT_SCALE,
-  ROLL_ANGLE,
-  ROLL_SPEED,
-  SCROLL_LAG_SECONDS,
-  SCROLL_RISE,
-  SCROLL_SPIN_TURNS,
-  SHAPE_SEQUENCE,
-  SHAPE_TILT,
+  PULSE_COUNT,
+  PULSE_OPACITY,
+  PULSE_SIZE,
   SWAY_ANGLE,
   SWAY_SPEED,
+  SYNAPSE_OPACITY,
   TURN_ANGLE,
   TURN_SPEED,
 } from './background-3d.constants';
-import { readScrollProgress, writeMorph } from './background-3d.morph';
-import { buildMorphTargets } from './background-3d.shapes';
+import { buildCatNetwork } from './background-3d.network';
+import { advancePulses, createPulseSystem, writePulsePositions } from './background-3d.pulses';
+import type { PulseSystem } from './background-3d.pulses';
+import type { CatNetwork, Point3 } from './background-3d.types';
 
 const ACCENT_PROPERTY = '--color-accent';
 const DARK_SCHEME_QUERY = '(prefers-color-scheme: dark)';
 const READY_ATTRIBUTE = 'data-background-ready';
 const MS_PER_SECOND = 1000;
-const FULL_TURN = Math.PI * 2;
+
+/** Every material that takes the accent colour. */
+type Tinted = LineBasicMaterial | PointsMaterial;
+
+/** What every material is drawn with: the accent colour, and a round dot for points. */
+interface Palette {
+  readonly color: Color;
+  readonly dot: CanvasTexture;
+}
+
+interface Pulses {
+  readonly system: PulseSystem;
+  readonly attribute: BufferAttribute;
+  /** The array behind `attribute` (BufferAttribute keeps the reference). */
+  readonly vertices: Float32Array;
+}
 
 interface BackgroundScene {
   readonly doc: Document;
   readonly renderer: WebGLRenderer;
   readonly scene: Scene;
   readonly camera: PerspectiveCamera;
-  readonly shape: LineSegments<BufferGeometry, LineBasicMaterial>;
-  readonly positions: BufferAttribute;
-  /** The array behind `positions` (BufferAttribute keeps the reference; the Float32 variant would copy it). */
-  readonly vertices: Float32Array;
-  readonly targets: readonly Float32Array[];
+  readonly cat: Group;
+  readonly materials: readonly Tinted[];
   readonly ambient: AmbientLayer;
-  /** Scroll progress the morph is currently drawn at; it trails the real one. */
-  shownProgress: number;
-  /** Seconds of animation so far; drives the idle spin, sway and bob. */
+  readonly pulses: Pulses;
+  /** Seconds of animation so far; drives the sway and bob. */
   elapsed: number;
   lastFrameTime: number | undefined;
 }
@@ -67,24 +84,65 @@ function readAccentColor(doc: Document): Color {
   return new Color(value);
 }
 
-interface Shape {
-  readonly shape: LineSegments<BufferGeometry, LineBasicMaterial>;
-  readonly positions: BufferAttribute;
-  readonly vertices: Float32Array;
+function geometryOf(points: readonly Point3[]): BufferGeometry {
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new BufferAttribute(new Float32Array(points.flat()), 3));
+  return geometry;
 }
 
-function createShape(targets: readonly Float32Array[], color: Color): Shape {
-  const vertices = new Float32Array(targets[0] ?? []);
-  const positions = new BufferAttribute(vertices, 3);
-  const geometry = new BufferGeometry();
-  geometry.setAttribute('position', positions);
-  const material = new LineBasicMaterial({
+function lineMaterial(color: Color, opacity: number): LineBasicMaterial {
+  return new LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false });
+}
+
+function pointMaterial({ color, dot }: Palette, size: number, opacity: number): PointsMaterial {
+  return new PointsMaterial({
     color,
+    map: dot,
+    size,
     transparent: true,
-    opacity: LINE_OPACITY,
+    opacity,
     depthWrite: false,
   });
-  return { shape: new LineSegments(geometry, material), positions, vertices };
+}
+
+function synapseSegments(network: CatNetwork): Point3[] {
+  return network.synapses.flatMap(([from, to]) => {
+    const start = network.neurons[from];
+    const end = network.neurons[to];
+    return start === undefined || end === undefined ? [] : [start, end];
+  });
+}
+
+function createPulses(network: CatNetwork): Pulses {
+  const vertices = new Float32Array(PULSE_COUNT * 3);
+  return {
+    system: createPulseSystem(network),
+    attribute: new BufferAttribute(vertices, 3),
+    vertices,
+  };
+}
+
+/** The cat network and the materials it uses, so the accent colour can change later. */
+function createCat(
+  network: CatNetwork,
+  pulses: Pulses,
+  palette: Palette,
+): { cat: Group; materials: Tinted[] } {
+  const materials = {
+    synapses: lineMaterial(palette.color, SYNAPSE_OPACITY),
+    outline: lineMaterial(palette.color, OUTLINE_OPACITY),
+    neurons: pointMaterial(palette, NEURON_SIZE, NEURON_OPACITY),
+    pulses: pointMaterial(palette, PULSE_SIZE, PULSE_OPACITY),
+  };
+  const pulseGeometry = new BufferGeometry();
+  pulseGeometry.setAttribute('position', pulses.attribute);
+  const cat = new Group().add(
+    new LineSegments(geometryOf(synapseSegments(network)), materials.synapses),
+    new LineLoop(geometryOf(network.outline), materials.outline),
+    new Points(geometryOf(network.neurons), materials.neurons),
+    new Points(pulseGeometry, materials.pulses),
+  );
+  return { cat, materials: Object.values(materials) };
 }
 
 function createScene(canvas: HTMLCanvasElement, doc: Document): BackgroundScene {
@@ -92,23 +150,22 @@ function createScene(canvas: HTMLCanvasElement, doc: Document): BackgroundScene 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
   const camera = new PerspectiveCamera(CAMERA_FIELD_OF_VIEW, 1, CAMERA_NEAR, CAMERA_FAR);
   camera.position.z = CAMERA_DISTANCE;
-  const color = readAccentColor(doc);
-  const targets = buildMorphTargets(SHAPE_SEQUENCE);
-  const { shape, positions, vertices } = createShape(targets, color);
-  const ambient = createAmbientLayer(color);
+  const palette: Palette = { color: readAccentColor(doc), dot: createDotTexture(doc) };
+  const network = buildCatNetwork();
+  const pulses = createPulses(network);
+  const { cat, materials } = createCat(network, pulses, palette);
+  const ambient = createAmbientLayer(palette.color, palette.dot);
   const scene = new Scene();
-  scene.add(shape, ambient.group);
+  scene.add(cat, ambient.group);
   return {
     doc,
     renderer,
     scene,
     camera,
-    shape,
-    positions,
-    vertices,
-    targets,
+    cat,
+    materials,
     ambient,
-    shownProgress: Number.NaN,
+    pulses,
     elapsed: 0,
     lastFrameTime: undefined,
   };
@@ -120,49 +177,33 @@ function resize(background: BackgroundScene): void {
   background.camera.aspect = width / height;
   background.camera.updateProjectionMatrix();
   const scale = width < height ? PORTRAIT_SCALE : 1;
-  background.shape.scale.setScalar(scale);
+  background.cat.scale.setScalar(scale);
   background.ambient.group.scale.setScalar(scale);
 }
 
 function recolor(background: BackgroundScene): void {
   const color = readAccentColor(background.doc);
-  background.shape.material.color.copy(color);
+  background.materials.forEach((material) => material.color.copy(color));
   recolorAmbientLayer(background.ambient, color);
 }
 
-/** Redraws the morph only when it has visibly moved. */
-function morphTo(background: BackgroundScene, progress: number): void {
-  if (Math.abs(progress - background.shownProgress) < MORPH_EPSILON) {
-    return;
-  }
-  background.shownProgress = progress;
-  writeMorph(background.vertices, background.targets, progress);
-  background.positions.needsUpdate = true;
-}
-
-/** Idle drift plus a turn and rise tied to how far down the page the reader is. */
-function poseShape(background: BackgroundScene): void {
-  const { elapsed, shownProgress: progress } = background;
-  background.shape.rotation.set(
-    SHAPE_TILT * (1 - progress) + Math.sin(elapsed * SWAY_SPEED) * SWAY_ANGLE,
-    Math.sin(elapsed * TURN_SPEED) * TURN_ANGLE + progress * SCROLL_SPIN_TURNS * FULL_TURN,
-    Math.cos(elapsed * ROLL_SPEED) * ROLL_ANGLE,
+/** A slow sway and bob; the cat always faces roughly forward. */
+function poseCat(background: BackgroundScene): void {
+  const { elapsed } = background;
+  background.cat.rotation.set(
+    Math.sin(elapsed * SWAY_SPEED) * SWAY_ANGLE,
+    Math.sin(elapsed * TURN_SPEED) * TURN_ANGLE,
+    0,
   );
-  background.shape.position.y = Math.sin(elapsed * BOB_SPEED) * BOB_HEIGHT + progress * SCROLL_RISE;
+  background.cat.position.y = Math.sin(elapsed * BOB_SPEED) * BOB_HEIGHT;
 }
 
 function render(background: BackgroundScene): void {
-  poseShape(background);
+  writePulsePositions(background.pulses.system, background.pulses.vertices);
+  background.pulses.attribute.needsUpdate = true;
+  poseCat(background);
   poseAmbientLayer(background.ambient, background.elapsed);
   background.renderer.render(background.scene, background.camera);
-}
-
-/** Frame-rate independent easing toward the scroll position. */
-function catchUp(current: number, target: number, seconds: number): number {
-  if (Number.isNaN(current)) {
-    return target;
-  }
-  return current + (target - current) * (1 - Math.exp(-seconds / SCROLL_LAG_SECONDS));
 }
 
 function animate(background: BackgroundScene, time: number): void {
@@ -171,8 +212,7 @@ function animate(background: BackgroundScene, time: number): void {
   const seconds =
     last === undefined ? 0 : Math.min((time - last) / MS_PER_SECOND, MAX_FRAME_SECONDS);
   background.elapsed += seconds;
-  const target = readScrollProgress(background.doc);
-  morphTo(background, catchUp(background.shownProgress, target, seconds));
+  advancePulses(background.pulses.system, seconds);
   render(background);
 }
 
@@ -193,23 +233,11 @@ function startMotion(background: BackgroundScene): void {
   run();
 }
 
-/** Reduced motion: no drift and no lag; the shape simply matches the scroll position. */
-function startStill(background: BackgroundScene): void {
-  const draw = (): void => {
-    morphTo(background, readScrollProgress(background.doc));
-    render(background);
-  };
-  window.addEventListener('scroll', draw, { passive: true });
-  window.addEventListener('resize', draw);
-  window.matchMedia(DARK_SCHEME_QUERY).addEventListener('change', draw);
-  draw();
-}
-
 /**
- * Draws one wireframe behind the page that morphs through SHAPE_SEQUENCE as
- * the reader scrolls (hexagon torus, neural networks, hexagon sphere, cat),
- * trailing the scroll slightly so the change feels fluid, inside slowly
- * turning orbit rings and dust.
+ * Draws the avatar's cat as a neural network behind the page: neurons filling
+ * its silhouette in layers, with signals climbing from the paws to the ears,
+ * inside slowly turning orbit rings and dust. The shape never changes. With
+ * reduced motion it is drawn once, still.
  */
 export function startBackgroundScene(
   canvas: HTMLCanvasElement,
@@ -217,15 +245,22 @@ export function startBackgroundScene(
   prefersReducedMotion: boolean,
 ): void {
   const background = createScene(canvas, doc);
+  const redrawIfStill = (): void => {
+    if (prefersReducedMotion) {
+      render(background);
+    }
+  };
   resize(background);
   window.addEventListener('resize', () => {
     resize(background);
+    redrawIfStill();
   });
   window.matchMedia(DARK_SCHEME_QUERY).addEventListener('change', () => {
     recolor(background);
+    redrawIfStill();
   });
   if (prefersReducedMotion) {
-    startStill(background);
+    render(background);
   } else {
     startMotion(background);
   }
