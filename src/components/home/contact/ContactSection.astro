@@ -1,21 +1,23 @@
 ---
 import Section from '@components/ui/Section.astro';
-import TerminalLink from '@components/ui/TerminalLink.astro';
 import { SectionId } from '@core/enums/section-id.enum';
 import { revealDelay } from '@core/motion/reveal-delay';
 import { PROFILE } from '@data/profile.data';
 import { getTranslations } from '@i18n/i18n';
 import type { SectionProps } from '../section-props.types';
+import { CONTACT_ICON_PATHS, ICON_VIEWBOX_SIZE } from './contact-icons.constants';
+import { ContactMethod } from './contact-method.enum';
 
 type Props = SectionProps;
 
 const { locale, number } = Astro.props;
 const t = getTranslations(locale);
 const links = [
-  { href: `mailto:${PROFILE.email}`, label: PROFILE.email },
-  { href: PROFILE.linkedInUrl, label: t.linkedInLabel },
-  { href: PROFILE.gitHubUrl, label: t.gitHubLabel },
+  { method: ContactMethod.Email, href: `mailto:${PROFILE.email}`, label: PROFILE.email },
+  { method: ContactMethod.LinkedIn, href: PROFILE.linkedInUrl, label: t.linkedInLabel },
+  { method: ContactMethod.GitHub, href: PROFILE.gitHubUrl, label: t.gitHubLabel },
 ];
+const viewBox = `0 0 ${String(ICON_VIEWBOX_SIZE)} ${String(ICON_VIEWBOX_SIZE)}`;
 ---
 
 <Section id={SectionId.Contact} number={number} title={t.sectionTitles[SectionId.Contact]}>
@@ -25,7 +27,18 @@ const links = [
   <ul class="contact__links">
     {links.map((link, index) => (
       <li data-reveal style={revealDelay(index + 2)}>
-        <TerminalLink href={link.href} label={link.label} />
+        <a class="contact__link" href={link.href}>
+          <svg
+            class="contact__icon"
+            viewBox={viewBox}
+            fill="currentColor"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <path d={CONTACT_ICON_PATHS[link.method]} />
+          </svg>
+          <span>{link.label}</span>
+        </a>
       </li>
     ))}
   </ul>
@@ -41,6 +54,21 @@ const links = [
 
   .contact__links {
     display: grid;
-    gap: var(--space-2);
+    gap: var(--space-3);
+  }
+
+  .contact__link {
+    align-items: center;
+    display: inline-flex;
+    font-size: var(--type-label-size);
+    gap: var(--space-3);
+    overflow-wrap: anywhere;
+  }
+
+  .contact__icon {
+    block-size: var(--icon-size);
+    color: var(--color-accent);
+    flex: none;
+    inline-size: var(--icon-size);
   }
 </style>

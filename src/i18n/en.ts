@@ -27,7 +27,6 @@ export const EN: Translations = {
   emptyProjects: 'No projects deployed yet.',
   emptyCertifications: 'No certifications logged yet.',
   setIntro: 'Let',
-  courseworkLabel: 'coursework',
   expectedLabel: '(expected)',
   sourceLabel: 'Source',
   demoLabel: 'Demo',

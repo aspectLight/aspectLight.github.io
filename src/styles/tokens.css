@@ -73,6 +73,7 @@
   --reveal-blur: 8px;
   --layer-marker: 10;
   --watermark-opacity: 0.08;
+  --icon-size: 1rem;
 }
 
 @media (prefers-color-scheme: dark) {

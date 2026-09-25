@@ -5,6 +5,28 @@ import type { ProjectEntry } from '@core/types/project.types';
 export const PROJECTS: readonly ProjectEntry[] = [
   {
     title: {
+      [Locale.En]: 'Research internship in trustworthy machine learning',
+      [Locale.Fr]: 'Stage de recherche en apprentissage automatique digne de confiance',
+    },
+    summary: {
+      [Locale.En]:
+        'A two-term undergraduate research internship in Prof. Thibaut Vidal’s group, which studies trustworthy machine learning through combinatorial optimization: using exact optimization to audit, explain and attack models. One of the group’s results shows that a trained random forest can give away the dataset it was trained on.',
+      [Locale.Fr]:
+        'Un stage de recherche de premier cycle sur deux trimestres dans le groupe du professeur Thibaut Vidal, qui étudie l’apprentissage automatique digne de confiance sous l’angle de l’optimisation combinatoire : se servir de l’optimisation exacte pour auditer, expliquer et attaquer des modèles. L’un des résultats du groupe montre qu’une forêt aléatoire entraînée peut révéler les données qui ont servi à l’entraîner.',
+    },
+    period: {
+      [Locale.En]: 'Fall 2026 → Winter 2027 · in progress',
+      [Locale.Fr]: 'Automne 2026 → hiver 2027 · en cours',
+    },
+    context: {
+      [Locale.En]:
+        'UPIR research scholarship, Polytechnique Montréal · supervised by Prof. Thibaut Vidal',
+      [Locale.Fr]:
+        'Bourse de recherche UPIR, Polytechnique Montréal · sous la supervision du professeur Thibaut Vidal',
+    },
+  },
+  {
+    title: {
       [Locale.En]: 'Ising machine on GPU',
       [Locale.Fr]: 'Machine d’Ising sur GPU',
     },

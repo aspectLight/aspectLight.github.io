@@ -15,14 +15,14 @@ export const CURRENT_FOCUS: readonly FocusItem[] = [
   },
   {
     topic: {
-      [Locale.En]: 'AI security and robustness',
-      [Locale.Fr]: 'Sécurité et robustesse de l’IA',
+      [Locale.En]: 'Trustworthy and secure machine learning',
+      [Locale.Fr]: 'Apprentissage automatique fiable et sécuritaire',
     },
     detail: {
       [Locale.En]:
-        'Exploring how learning systems get attacked, and how to tell whether a defence actually holds.',
+        'UPIR research internship with Prof. Thibaut Vidal, where optimization is used to audit and attack models.',
       [Locale.Fr]:
-        'J’explore comment on attaque les systèmes d’apprentissage, et comment vérifier qu’une défense tient vraiment.',
+        'Stage de recherche UPIR avec le professeur Thibaut Vidal, où l’optimisation sert à auditer et à attaquer des modèles.',
     },
   },
 ];

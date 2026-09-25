@@ -20,8 +20,6 @@ export interface Translations {
   readonly emptyCertifications: string;
   /** Opens a set definition: "Let D = { … }". */
   readonly setIntro: string;
-  /** Annotation after the coursework set: "← coursework". */
-  readonly courseworkLabel: string;
   readonly expectedLabel: string;
   readonly sourceLabel: string;
   readonly demoLabel: string;

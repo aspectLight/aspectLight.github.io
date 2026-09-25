@@ -13,7 +13,7 @@ export const EDUCATION: readonly EducationEntry[] = [
       [Locale.Fr]: 'Orientation intelligence artificielle et sciences des données',
     },
     start: '2023-08',
-    end: '2027-12',
+    end: '2027-05',
     isEndExpected: true,
     place: 'Montréal, QC',
     coursework: {

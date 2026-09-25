@@ -1,4 +1,10 @@
-<canvas class="background-3d" aria-hidden="true" data-background-3d></canvas>
+<!-- Persisted across the language switch, so the scene keeps running instead of restarting. -->
+<canvas
+  class="background-3d"
+  aria-hidden="true"
+  data-background-3d
+  transition:persist="background-3d"
+></canvas>
 
 <script>
   import { initBackground3d } from './background-3d.client';
