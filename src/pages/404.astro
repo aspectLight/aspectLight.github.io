@@ -1,0 +1,35 @@
+---
+import type { Locale } from '@i18n/locales';
+import { homePath } from '@i18n/routes';
+import { UI } from '@i18n/ui';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const locales: readonly Locale[] = ['en', 'fr'];
+---
+
+<BaseLayout
+  locale="en"
+  title={UI.en.pageTitle}
+  description={UI.en.notFound}
+  skipLabel={UI.en.skipToContent}
+  alternates={locales.map((locale) => ({ locale, href: homePath(locale) }))}
+>
+  <main id="content" class="not-found">
+    {
+      locales.map((locale) => (
+        <p lang={locale}>
+          {UI[locale].notFound}{' '}
+          <a href={homePath(locale)}>{UI[locale].notFoundReturn} →</a>
+        </p>
+      ))
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    font-size: var(--type-mono-body-size);
+    margin-inline: var(--space-gutter);
+    padding-block: var(--space-8);
+  }
+</style>

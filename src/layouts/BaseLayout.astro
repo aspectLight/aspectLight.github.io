@@ -1,0 +1,61 @@
+---
+import { Font } from 'astro:assets';
+
+import type { Locale } from '@i18n/locales';
+import type { AlternateLink } from '@i18n/routes';
+
+import '../styles/base.css';
+
+interface Props {
+  readonly locale: Locale;
+  readonly title: string;
+  readonly description: string;
+  readonly skipLabel: string;
+  readonly alternates: readonly AlternateLink[];
+}
+
+const { locale, title, description, skipLabel, alternates } = Astro.props;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
+    <Font cssVariable="--font-display" preload />
+    <Font cssVariable="--font-text" preload />
+    <Font cssVariable="--font-mono" preload />
+    {
+      alternates.map((alternate) => (
+        <link rel="alternate" hreflang={alternate.locale} href={alternate.href} />
+      ))
+    }
+  </head>
+  <body>
+    <a class="skip-link" href="#content">{skipLabel}</a>
+    <slot />
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-code);
+    font-size: var(--type-mono-label-size);
+    inset-block-start: var(--space-2);
+    inset-inline-start: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    position: absolute;
+    transform: translateY(-200%);
+  }
+
+  .skip-link:focus {
+    position: fixed;
+    transform: translateY(0);
+    z-index: 1;
+  }
+</style>

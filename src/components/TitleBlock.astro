@@ -1,0 +1,186 @@
+---
+import { Image } from 'astro:assets';
+
+import avatar from '../assets/avatar-terracotta.jpg';
+
+interface Props {
+  readonly givenName: string;
+  readonly familyName: string;
+  readonly authorLine: string;
+  readonly abstractLabel: string;
+  readonly abstract: string;
+  readonly contentsLabel: string;
+  readonly contentsNavLabel: string;
+  readonly avatarAlt: string;
+  readonly avatarCaption: string;
+  readonly contents: readonly { readonly href: string; readonly label: string }[];
+}
+
+const {
+  givenName,
+  familyName,
+  authorLine,
+  abstractLabel,
+  abstract,
+  contentsLabel,
+  contentsNavLabel,
+  avatarAlt,
+  avatarCaption,
+  contents,
+} = Astro.props;
+---
+
+<div class="title-block" id="abstract">
+  <div class="title-block__identity">
+    <h1 class="title-block__name">
+      {givenName}<br />{familyName}
+    </h1>
+    <p class="title-block__author">{authorLine}</p>
+    <figure class="title-block__avatar">
+      <div class="title-block__frame">
+        <Image src={avatar} alt={avatarAlt} width={480} height={480} />
+      </div>
+      <figcaption>{avatarCaption}</figcaption>
+    </figure>
+    <div class="title-block__abstract">
+      <p>
+        <em>{abstractLabel}</em>
+        {' '}
+        {abstract}
+      </p>
+    </div>
+    <nav class="title-block__contents" aria-label={contentsNavLabel}>
+      <span>{contentsLabel}</span>
+      {
+        contents.map((item, index) => (
+          <>
+            {index === 0 ? ' ' : ' · '}
+            <a href={item.href}>{item.label}</a>
+          </>
+        ))
+      }
+    </nav>
+  </div>
+  <slot />
+</div>
+
+<style>
+  .title-block {
+    padding-block-start: var(--space-7);
+    padding-inline: var(--space-gutter);
+  }
+
+  .title-block__name {
+    font-family: var(--font-serif);
+    font-size: var(--type-name-size);
+    font-weight: 400;
+    letter-spacing: var(--type-name-tracking);
+    line-height: var(--type-name-leading);
+    margin: 0;
+  }
+
+  .title-block__author {
+    color: var(--color-muted);
+    font-size: var(--type-mono-label-size);
+    line-height: var(--type-mono-label-leading);
+    margin-block: var(--space-5) var(--space-6);
+  }
+
+  .title-block__frame {
+    border: 0.0625rem solid var(--color-rule);
+    inline-size: var(--size-avatar);
+    padding: var(--space-2);
+  }
+
+  .title-block__frame :global(img) {
+    block-size: auto;
+    inline-size: 100%;
+  }
+
+  .title-block__avatar {
+    margin: 0 0 var(--space-6);
+  }
+
+  .title-block__avatar figcaption {
+    color: var(--color-muted);
+    font-size: var(--type-mono-small-size);
+    line-height: var(--type-mono-small-leading);
+    margin-block-start: var(--space-2);
+    max-inline-size: 16rem;
+  }
+
+  .title-block__abstract {
+    border: 0.0625rem solid var(--color-rule);
+    max-inline-size: var(--size-column);
+    padding: var(--space-4);
+  }
+
+  .title-block__abstract p {
+    font-size: var(--type-mono-body-size);
+    line-height: var(--type-mono-body-leading);
+    margin: 0;
+  }
+
+  .title-block__abstract em {
+    font-family: var(--font-italic);
+    font-style: italic;
+  }
+
+  .title-block__contents {
+    font-size: var(--type-mono-label-size);
+    line-height: var(--type-mono-label-leading);
+    margin-block-start: var(--space-6);
+  }
+
+  .title-block__contents span {
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 700px) {
+    .title-block__abstract {
+      padding: var(--space-5);
+    }
+
+    .title-block__identity {
+      display: grid;
+      grid-template-columns: minmax(0, var(--size-column)) var(--size-avatar);
+      column-gap: var(--space-6);
+    }
+
+    .title-block__name,
+    .title-block__author {
+      grid-column: 1;
+    }
+
+    .title-block__avatar {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      margin: 0;
+    }
+
+    .title-block__abstract,
+    .title-block__contents {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .title-block {
+      padding-inline: var(--space-offset);
+    }
+
+    .title-block__identity {
+      grid-template-columns: var(--size-column) var(--size-gap) var(--size-margin);
+    }
+
+    .title-block__avatar {
+      grid-column: 2 / span 2;
+      justify-self: end;
+    }
+
+    .title-block__abstract,
+    .title-block__contents {
+      grid-column: 1;
+    }
+  }
+</style>

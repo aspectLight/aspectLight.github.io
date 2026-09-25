@@ -1,0 +1,86 @@
+---
+interface Props {
+  readonly institution: string;
+  readonly degree: string;
+  readonly track: string;
+  readonly dates: string;
+  readonly place: string;
+  readonly courseworkLabel: string;
+  readonly coursework: string;
+}
+
+const { institution, degree, track, dates, place, courseworkLabel, coursework } = Astro.props;
+---
+
+<article class="education-entry">
+  <p class="education-entry__meta education-entry__meta--inline">{dates}</p>
+  <h3 class="education-entry__institution">{institution}</h3>
+  <p class="education-entry__degree">{degree}</p>
+  <p class="education-entry__degree">{track}</p>
+  <p class="education-entry__meta education-entry__meta--margin">
+    {dates}<br />{place}
+  </p>
+  <p class="education-entry__coursework-label">{courseworkLabel}</p>
+  <p class="education-entry__coursework">{coursework}</p>
+</article>
+
+<style>
+  .education-entry {
+    display: grid;
+    max-inline-size: var(--size-column);
+  }
+
+  .education-entry__institution {
+    font-family: var(--font-serif);
+    font-size: var(--type-entry-size);
+    font-weight: 400;
+    line-height: var(--type-entry-leading);
+    margin: 0;
+  }
+
+  .education-entry__degree,
+  .education-entry__coursework {
+    font-size: var(--type-mono-body-size);
+    line-height: var(--type-mono-body-leading);
+    margin: 0;
+  }
+
+  .education-entry__meta,
+  .education-entry__coursework-label {
+    color: var(--color-muted);
+    font-size: var(--type-mono-label-size);
+    line-height: var(--type-mono-label-leading);
+    margin: 0;
+  }
+
+  .education-entry__meta--margin {
+    display: none;
+  }
+
+  .education-entry__coursework-label {
+    margin-block-start: var(--space-5);
+  }
+
+  @media (min-width: 1100px) {
+    .education-entry {
+      grid-template-columns: var(--size-column) var(--size-gap) var(--size-margin);
+    }
+
+    .education-entry__meta--inline {
+      display: none;
+    }
+
+    .education-entry__meta--margin {
+      display: block;
+      grid-column: 3;
+      grid-row: 1 / span 3;
+    }
+
+    .education-entry__institution,
+    .education-entry__degree,
+    .education-entry__coursework,
+    .education-entry__coursework-label {
+      grid-column: 1;
+    }
+  }
+</style>

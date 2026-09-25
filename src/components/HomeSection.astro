@@ -1,0 +1,45 @@
+---
+interface Props {
+  readonly id: string;
+  readonly label: string;
+  readonly state: 'filled' | 'empty';
+  readonly emptyMessage: string;
+}
+
+const { id, label, state, emptyMessage } = Astro.props;
+---
+
+<section class="home-section" id={id} aria-labelledby={`${id}-label`}>
+  <h2 class="home-section__label" id={`${id}-label`}>{label}</h2>
+  {state === 'empty' ? <p class="home-section__empty">{emptyMessage}</p> : <slot />}
+</section>
+
+<style>
+  .home-section {
+    border-block-start: 0.0625rem solid var(--color-rule);
+    margin-inline: var(--space-gutter);
+    padding-block: var(--space-section);
+  }
+
+  .home-section__label {
+    color: var(--color-accent);
+    font-size: var(--type-mono-label-size);
+    font-weight: 400;
+    letter-spacing: var(--type-tracking-label);
+    line-height: var(--type-mono-label-leading);
+    margin: 0 0 var(--space-6);
+  }
+
+  .home-section__empty {
+    color: var(--color-muted);
+    font-size: var(--type-mono-body-size);
+    line-height: var(--type-mono-body-leading);
+    margin: 0;
+  }
+
+  @media (min-width: 1100px) {
+    .home-section {
+      margin-inline: var(--space-offset);
+    }
+  }
+</style>

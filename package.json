@@ -1,0 +1,25 @@
+{
+  "name": "personal-website",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "packageManager": "pnpm@11.27.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check --minimumFailingSeverity warning"
+  },
+  "dependencies": {
+    "astro": "7.3.5",
+    "sharp": "0.35.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@types/node": "26.6.2",
+    "typescript": "6.0.3"
+  }
+}
