@@ -1,4 +1,4 @@
-import type { QuerySummary } from './background-3d.queries';
+import type { QuerySummary } from './background-3d.types';
 
 const READOUT_SELECTOR = '[data-query-readout]';
 const VISIBLE_ATTRIBUTE = 'data-visible';

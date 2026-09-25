@@ -1,11 +1,4 @@
-import type { Point2 } from './background-3d.types';
-
-/** The answer to a proximity query: the closest boundary point, and the edge it lies on. */
-export interface ProximityAnswer {
-  readonly point: Point2;
-  /** Index of the edge from vertex `edge` to vertex `edge + 1` (wrapping). */
-  readonly edge: number;
-}
+import type { Point2, ProximityAnswer } from './background-3d.types';
 
 interface Candidate {
   readonly point: Point2;

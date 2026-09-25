@@ -1,8 +1,8 @@
 import { PageEvent } from '@core/enums/page-event.enum';
 import { IDLE_TIMEOUT_MS } from './background-3d.constants';
-import type { QuerySummary } from './background-3d.queries';
 import { renderReadout } from './background-3d.readout';
-import type { BackgroundHandle } from './background-3d.scene';
+import type { BackgroundScene } from './background-3d.scene';
+import type { QuerySummary } from './background-3d.types';
 
 const CANVAS_SELECTOR = '[data-background-3d]';
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
@@ -55,7 +55,7 @@ function isQueryClick(event: MouseEvent, doc: Document): boolean {
 }
 
 /** Turns clicks on empty space into proximity queries, and keeps the readout current. */
-function listenForQueries(doc: Document, background: BackgroundHandle): void {
+function listenForQueries(doc: Document, background: BackgroundScene): void {
   let latest: QuerySummary | undefined;
   doc.addEventListener('click', (event) => {
     if (!isQueryClick(event, doc)) {
@@ -92,8 +92,10 @@ export function initBackground3d(doc: Document): void {
   afterLoad(doc, () => {
     whenIdle(() => {
       import('./background-3d.scene')
-        .then(({ startBackgroundScene }) => {
-          listenForQueries(doc, startBackgroundScene(canvas, doc, prefersReducedMotion));
+        .then(({ BackgroundScene }) => {
+          const background = new BackgroundScene(canvas, doc, prefersReducedMotion);
+          background.start();
+          listenForQueries(doc, background);
         })
         .catch(() => {
           canvas.remove();

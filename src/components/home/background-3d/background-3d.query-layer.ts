@@ -1,126 +1,92 @@
-import {
-  BufferAttribute,
-  BufferGeometry,
-  Group,
-  LineBasicMaterial,
-  LineSegments,
-  Points,
-  PointsMaterial,
-} from 'three';
-import type { CanvasTexture, Color } from 'three';
+import { BufferAttribute, BufferGeometry, Group, LineSegments, Points } from 'three';
+import type { Color, LineBasicMaterial, PointsMaterial } from 'three';
 
 import {
   FOUND_EDGE_OPACITY,
   MAX_SAMPLES,
   QUERY_LINE_OPACITY,
-  QUERY_LINE_SECONDS,
   RECONSTRUCTED_GLOW,
   RECONSTRUCTED_GLOW_SECONDS,
   SAMPLE_OPACITY,
   SAMPLE_SIZE,
 } from './background-3d.constants';
-import { writeFoundEdges, writeSamples } from './background-3d.queries';
-import type { QueryState } from './background-3d.queries';
+import { createLineMaterial, createPointMaterial } from './background-3d.materials';
+import type { QueryLog } from './background-3d.queries';
+import type { Palette } from './background-3d.types';
+
+/** Vertices of the latest query line: the click and its answer. */
+const LINE_VERTICES = 2;
 
 /** A position buffer and the geometry drawing it, sized once for the worst case. */
-interface Buffer {
-  readonly geometry: BufferGeometry;
-  readonly attribute: BufferAttribute;
+class DrawBuffer {
+  readonly geometry = new BufferGeometry();
+  private readonly attribute: BufferAttribute;
   /** The array behind `attribute` (BufferAttribute keeps the reference). */
   readonly vertices: Float32Array;
+
+  constructor(vertexCount: number) {
+    this.vertices = new Float32Array(vertexCount * 3);
+    this.attribute = new BufferAttribute(this.vertices, 3);
+    this.geometry.setAttribute('position', this.attribute);
+    this.geometry.setDrawRange(0, 0);
+  }
+
+  /** Draws the first `vertexCount` vertices, which have just been written. */
+  refresh(vertexCount: number): void {
+    this.geometry.setDrawRange(0, vertexCount);
+    this.attribute.needsUpdate = true;
+  }
 }
 
-/** Everything the visitor's questions add to the cat: found edges, answer points, the last line. */
-export interface QueryLayer {
-  readonly group: Group;
-  readonly materials: {
-    readonly edges: LineBasicMaterial;
-    readonly line: LineBasicMaterial;
-    readonly samples: PointsMaterial;
-  };
-  readonly edges: Buffer;
-  readonly line: Buffer;
-  readonly samples: Buffer;
+/** Draws what the visitor's questions revealed: found edges, answer points, the latest line. */
+export class QueryLayer {
+  readonly group = new Group();
+  private readonly edges: DrawBuffer;
+  private readonly line = new DrawBuffer(LINE_VERTICES);
+  private readonly samples = new DrawBuffer(MAX_SAMPLES);
+  private readonly edgeMaterial: LineBasicMaterial;
+  private readonly lineMaterial: LineBasicMaterial;
+  private readonly sampleMaterial: PointsMaterial;
   /** Seconds left of the glow played when the outline is complete. */
-  glow: number;
-}
+  private glow = 0;
 
-function createBuffer(vertexCount: number): Buffer {
-  const vertices = new Float32Array(vertexCount * 3);
-  const attribute = new BufferAttribute(vertices, 3);
-  const geometry = new BufferGeometry();
-  geometry.setAttribute('position', attribute);
-  geometry.setDrawRange(0, 0);
-  return { geometry, attribute, vertices };
-}
-
-function refresh(buffer: Buffer, vertexCount: number): void {
-  buffer.geometry.setDrawRange(0, vertexCount);
-  buffer.attribute.needsUpdate = true;
-}
-
-function lines(color: Color, opacity: number): LineBasicMaterial {
-  return new LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false });
-}
-
-export function createQueryLayer(edgeCount: number, color: Color, dot: CanvasTexture): QueryLayer {
-  const layer: QueryLayer = {
-    group: new Group(),
-    materials: {
-      edges: lines(color, FOUND_EDGE_OPACITY),
-      line: lines(color, 0),
-      samples: new PointsMaterial({
-        color,
-        map: dot,
-        size: SAMPLE_SIZE,
-        transparent: true,
-        opacity: SAMPLE_OPACITY,
-        depthWrite: false,
-      }),
-    },
-    edges: createBuffer(edgeCount * 2),
-    line: createBuffer(2),
-    samples: createBuffer(MAX_SAMPLES),
-    glow: 0,
-  };
-  layer.group.add(
-    new LineSegments(layer.edges.geometry, layer.materials.edges),
-    new LineSegments(layer.line.geometry, layer.materials.line),
-    new Points(layer.samples.geometry, layer.materials.samples),
-  );
-  return layer;
-}
-
-/** Copies a new answer into the buffers: call once per query. */
-export function showQuery(layer: QueryLayer, state: QueryState, reconstructed: boolean): void {
-  refresh(layer.edges, writeFoundEdges(state, layer.edges.vertices));
-  refresh(layer.samples, writeSamples(state, layer.samples.vertices));
-  const latest = state.latest;
-  if (latest !== undefined) {
-    layer.line.vertices.set([...latest.from, 0, ...latest.to, 0]);
-    refresh(layer.line, 2);
+  constructor(edgeCount: number, palette: Palette) {
+    this.edges = new DrawBuffer(edgeCount * 2);
+    this.edgeMaterial = createLineMaterial(palette.color, FOUND_EDGE_OPACITY);
+    this.lineMaterial = createLineMaterial(palette.color, 0);
+    this.sampleMaterial = createPointMaterial(palette, SAMPLE_SIZE, SAMPLE_OPACITY);
+    this.group.add(
+      new LineSegments(this.edges.geometry, this.edgeMaterial),
+      new LineSegments(this.line.geometry, this.lineMaterial),
+      new Points(this.samples.geometry, this.sampleMaterial),
+    );
   }
-  if (reconstructed) {
-    layer.glow = RECONSTRUCTED_GLOW_SECONDS;
-  }
-}
 
-/**
- * Advances the fades by `seconds`. A step of Infinity finishes them at once,
- * which is what reduced motion uses.
- */
-export function fadeQueryLayer(layer: QueryLayer, state: QueryState, seconds: number): void {
-  const latest = state.latest;
-  if (latest !== undefined) {
-    latest.age += seconds;
+  /** Copies the log's latest state into the buffers: call once per query. */
+  show(log: QueryLog, reconstructed: boolean): void {
+    this.edges.refresh(log.writeFoundEdges(this.edges.vertices));
+    this.samples.refresh(log.writeSamples(this.samples.vertices));
+    this.line.refresh(log.writeLatestLine(this.line.vertices));
+    if (reconstructed) {
+      this.glow = RECONSTRUCTED_GLOW_SECONDS;
+    }
   }
-  const lineLeft = latest === undefined ? 0 : Math.max(0, 1 - latest.age / QUERY_LINE_SECONDS);
-  layer.materials.line.opacity = QUERY_LINE_OPACITY * lineLeft;
-  layer.glow = Math.max(0, layer.glow - seconds);
-  layer.materials.edges.opacity =
-    FOUND_EDGE_OPACITY + RECONSTRUCTED_GLOW * (layer.glow / RECONSTRUCTED_GLOW_SECONDS);
-}
 
-export function recolorQueryLayer(layer: QueryLayer, color: Color): void {
-  Object.values(layer.materials).forEach((material) => material.color.copy(color));
+  /**
+   * Advances the fades by `seconds`. A step of Infinity finishes them at once,
+   * which is what reduced motion uses.
+   */
+  fade(log: QueryLog, seconds: number): void {
+    log.age(seconds);
+    this.lineMaterial.opacity = QUERY_LINE_OPACITY * log.latestLife();
+    this.glow = Math.max(0, this.glow - seconds);
+    this.edgeMaterial.opacity =
+      FOUND_EDGE_OPACITY + RECONSTRUCTED_GLOW * (this.glow / RECONSTRUCTED_GLOW_SECONDS);
+  }
+
+  recolor(color: Color): void {
+    [this.edgeMaterial, this.lineMaterial, this.sampleMaterial].forEach((material) =>
+      material.color.copy(color),
+    );
+  }
 }
