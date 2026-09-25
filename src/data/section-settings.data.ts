@@ -1,10 +1,10 @@
 import { SectionId } from '@core/enums/section-id.enum';
 import type { SectionSettings } from '@core/types/section.types';
 
-/** Owner decision: Projects and Certifications stay visible while empty. */
+/** Empty sections stay hidden: an empty heading reads as a missing piece, not a plan. */
 export const SECTION_SETTINGS: SectionSettings = {
   [SectionId.Education]: { showWhenEmpty: false },
-  [SectionId.Projects]: { showWhenEmpty: true },
-  [SectionId.Certifications]: { showWhenEmpty: true },
+  [SectionId.Projects]: { showWhenEmpty: false },
+  [SectionId.Certifications]: { showWhenEmpty: false },
   [SectionId.Contact]: { showWhenEmpty: true },
 };

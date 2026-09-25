@@ -22,7 +22,7 @@ const isEmpty = PROJECTS.length === 0;
   {!isEmpty && (
     <ol class="project-list">
       {PROJECTS.map((project, index) => (
-        <li class="project-entry" data-reveal style={revealDelay(index + 1)}>
+        <li class="project-entry" id={project.id} data-reveal style={revealDelay(index + 1)}>
           <EntryReference number={index + 1} />
           <div>
             <h3 class="project-entry__title">{project.title[locale]}</h3>
@@ -53,6 +53,8 @@ const isEmpty = PROJECTS.length === 0;
   }
 
   .project-entry {
+    /* Keeps a linked entry's title clear of the fixed section marker. */
+    scroll-margin-block-start: var(--layout-marker-clearance);
     display: grid;
     gap: var(--space-3);
     grid-template-columns: auto 1fr;

@@ -130,6 +130,22 @@
     transform: translateY(var(--reveal-distance));
   }
 
+  /*
+   * The title block is on screen at load, so it animates from the first paint
+   * (no waiting for a script or an observer) and the name is never held back.
+   */
+  @keyframes reveal-in {
+    from {
+      filter: blur(var(--reveal-blur));
+      opacity: 0;
+      transform: translateY(var(--reveal-distance));
+    }
+  }
+
+  :root[data-reveal-ready] [data-reveal-on-load] {
+    animation: reveal-in var(--motion-reveal) var(--motion-ease-out) var(--reveal-delay, 0s) both;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;

@@ -27,6 +27,15 @@ function whenIdle(task: () => void): void {
   }
 }
 
+/** After the page (fonts, avatar) has finished loading, so Three.js never competes with it. */
+function afterLoad(doc: Document, task: () => void): void {
+  if (doc.readyState === 'complete') {
+    task();
+  } else {
+    window.addEventListener('load', task, { once: true });
+  }
+}
+
 /** Primary button, no modifier keys, not already handled by something else. */
 function isPlainClick(event: MouseEvent): boolean {
   const hasModifier = event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
@@ -65,7 +74,8 @@ function listenForQueries(doc: Document, background: BackgroundHandle): void {
 }
 
 /**
- * Loads Three.js only after the page is idle, so the text renders first.
+ * Loads Three.js only once the page has loaded and the browser is idle, so the
+ * text and the avatar come first.
  * Without WebGL, or if loading fails, the canvas is removed and the page
  * stays as it is: plain paper, and clicks do nothing extra.
  */
@@ -79,13 +89,15 @@ export function initBackground3d(doc: Document): void {
     return;
   }
   const prefersReducedMotion = window.matchMedia(REDUCED_MOTION_QUERY).matches;
-  whenIdle(() => {
-    import('./background-3d.scene')
-      .then(({ startBackgroundScene }) => {
-        listenForQueries(doc, startBackgroundScene(canvas, doc, prefersReducedMotion));
-      })
-      .catch(() => {
-        canvas.remove();
-      });
+  afterLoad(doc, () => {
+    whenIdle(() => {
+      import('./background-3d.scene')
+        .then(({ startBackgroundScene }) => {
+          listenForQueries(doc, startBackgroundScene(canvas, doc, prefersReducedMotion));
+        })
+        .catch(() => {
+          canvas.remove();
+        });
+    });
   });
 }

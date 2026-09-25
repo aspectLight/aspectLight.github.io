@@ -53,7 +53,7 @@
   /* Layout */
   --layout-offset: var(--space-gutter);
   --layout-column: 38rem;
-  --layout-avatar: 12rem;
+  --layout-avatar: 9rem;
   --layout-avatar-ratio: 7 / 9;
   --layout-avatar-padding: 0.375rem;
   --layout-hero-min-height: 90vh;

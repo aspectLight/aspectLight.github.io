@@ -33,25 +33,22 @@ const fullName = `${profile.givenName} ${profile.familyName}`;
   data-marker={HERO_MARKER}
 >
   <div class="title-block__text">
-    <p class="title-block__label" data-reveal>
+    <p class="title-block__label" data-reveal-on-load>
       {HERO_MARKER} — {fullName}
     </p>
-    <h1 class="title-block__name" id="title-block-name" data-reveal style={revealDelay(1)}>
-      {profile.givenName}
-      <br />
-      {profile.familyName}
+    <h1 class="title-block__name" id="title-block-name" data-reveal-on-load style={revealDelay(1)}>
+      <span class="title-block__name-line">{profile.givenName}</span>{' '}
+      <span class="title-block__name-line">{profile.familyName}</span>
     </h1>
-    <p class="title-block__author" data-reveal style={revealDelay(2)}>
-      {t.authorLine}
-    </p>
-    <p class="title-block__abstract" data-reveal style={revealDelay(3)}>
+    <p class="title-block__abstract" data-reveal-on-load style={revealDelay(2)}>
       <em class="title-block__abstract-label">{t.abstractLabel}</em> {profile.abstract[locale]}
     </p>
-    <p class="title-block__links" data-reveal style={revealDelay(4)}>
+    <p class="title-block__links" data-reveal-on-load style={revealDelay(3)}>
+      <TerminalLink href={`#${SectionId.Projects}`} label={t.projectsShortcutLabel} />
       <TerminalLink href={`#${SectionId.Contact}`} label={t.contactShortcutLabel} />
     </p>
   </div>
-  <div class="title-block__avatar" data-reveal style={revealDelay(3)}>
+  <div class="title-block__avatar" data-reveal-on-load style={revealDelay(2)}>
     <Image
       class="title-block__photo"
       src={avatar}
@@ -92,12 +89,6 @@ const fullName = `${profile.givenName} ${profile.familyName}`;
     margin-block: var(--space-4) var(--space-5);
   }
 
-  .title-block__author {
-    color: var(--color-muted);
-    font-size: var(--type-small-size);
-    margin-block-end: var(--space-6);
-  }
-
   .title-block__abstract {
     background: var(--color-paper);
     border: var(--line-width) solid var(--color-rule);
@@ -113,7 +104,14 @@ const fullName = `${profile.givenName} ${profile.familyName}`;
     font-size: var(--type-label-size);
   }
 
+  .title-block__name-line {
+    display: block;
+  }
+
   .title-block__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
     margin-block-start: var(--space-6);
   }
 

@@ -18,9 +18,11 @@ const t = getTranslations(locale);
   </h2>
   <ul class="current-focus__list">
     {CURRENT_FOCUS.map((item, index) => (
-      <li class="current-focus__item" data-reveal style={revealDelay(index + 1)}>
-        <span class="current-focus__topic">{item.topic[locale]}</span>
-        <span class="current-focus__detail">{item.detail[locale]}</span>
+      <li data-reveal style={revealDelay(index + 1)}>
+        <a class="current-focus__item" href={`#${item.project}`}>
+          <span class="current-focus__topic">{item.topic[locale]}</span>
+          <span class="current-focus__detail">{item.detail[locale]}</span>
+        </a>
       </li>
     ))}
   </ul>
@@ -51,6 +53,12 @@ const t = getTranslations(locale);
     display: grid;
     gap: var(--space-1);
     padding-inline-start: var(--space-4);
+    transition: border-width var(--motion-link) ease-out;
+  }
+
+  /* The accent bar thickens and the topic takes the accent: it leads to the project. */
+  .current-focus__item:hover {
+    border-inline-start-width: var(--focus-width);
   }
 
   .current-focus__topic {

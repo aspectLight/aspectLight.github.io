@@ -8,10 +8,10 @@ export interface Translations {
   readonly skipToContent: string;
   readonly languageNavLabel: string;
   readonly localeLabels: Readonly<Record<Locale, string>>;
-  readonly authorLine: string;
   readonly abstractLabel: string;
   readonly avatarAlt: string;
-  /** Terminal-style shortcut from the title block down to the contact section. */
+  /** Terminal-style shortcuts from the title block down to the projects and the contact section. */
+  readonly projectsShortcutLabel: string;
   readonly contactShortcutLabel: string;
   /** Heading of the short list of what is being worked on now. */
   readonly currentFocusLabel: string;

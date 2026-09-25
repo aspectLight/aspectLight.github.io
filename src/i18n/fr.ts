@@ -13,10 +13,10 @@ export const FR: Translations = {
     [Locale.En]: 'EN',
     [Locale.Fr]: 'FR',
   },
-  authorLine: 'Génie logiciel · Polytechnique Montréal · Montréal',
   abstractLabel: 'Résumé.',
   avatarAlt:
     'Illustration : un chat noir vu de dos, assis devant un mur d’hexagones terre cuite et sable, à la texture hachurée.',
+  projectsShortcutLabel: './projects',
   contactShortcutLabel: './contact',
   currentFocusLabel: 'En ce moment',
   sectionTitles: {

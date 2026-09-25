@@ -12,10 +12,10 @@ export const EN: Translations = {
     [Locale.En]: 'EN',
     [Locale.Fr]: 'FR',
   },
-  authorLine: 'Software engineering · Polytechnique Montréal · Montréal',
   abstractLabel: 'Abstract.',
   avatarAlt:
     'Illustration: a black cat seen from behind, sitting in front of a wall of terracotta and sand hexagons, with a hand-hatched texture.',
+  projectsShortcutLabel: './projects',
   contactShortcutLabel: './contact',
   currentFocusLabel: 'Currently',
   sectionTitles: {

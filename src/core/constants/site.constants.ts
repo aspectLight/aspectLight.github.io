@@ -1,9 +1,9 @@
 import { SectionId } from '@core/enums/section-id.enum';
 
-/** The order sections appear in on the home page. */
+/** The order sections appear in on the home page: the work first, its context after. */
 export const SECTION_ORDER: readonly SectionId[] = [
-  SectionId.Education,
   SectionId.Projects,
+  SectionId.Education,
   SectionId.Certifications,
   SectionId.Contact,
 ];
