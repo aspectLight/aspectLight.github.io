@@ -66,7 +66,8 @@ export const NETWORK_SEED = 7;
 
 /* Look */
 export const SYNAPSE_OPACITY = 0.2;
-export const OUTLINE_OPACITY = 0.32;
+/** The outline starts faint: its edges are what the visitor can uncover. */
+export const OUTLINE_OPACITY = 0.12;
 export const NEURON_SIZE = 0.08;
 export const NEURON_OPACITY = 0.75;
 
@@ -77,6 +78,20 @@ export const PULSE_SPEED = 0.9;
 export const PULSE_SIZE = 0.13;
 export const PULSE_OPACITY = 0.95;
 export const PULSE_SEED = 13;
+
+/* Proximity queries: a click on empty space asks the cat for its closest boundary point */
+/** Edges an answer has landed on. */
+export const FOUND_EDGE_OPACITY = 0.6;
+/** Extra opacity on every edge for a moment once the whole outline is found. */
+export const RECONSTRUCTED_GLOW = 0.4;
+export const RECONSTRUCTED_GLOW_SECONDS = 1.6;
+export const QUERY_LINE_OPACITY = 0.7;
+/** How long the line from the click to the answer stays before it has faded out. */
+export const QUERY_LINE_SECONDS = 2.4;
+export const SAMPLE_SIZE = 0.07;
+export const SAMPLE_OPACITY = 0.85;
+/** Oldest answers are dropped past this many, so memory stays bounded. */
+export const MAX_SAMPLES = 200;
 
 /* Ambient layer: thin orbit rings and dust around the cat */
 export const ORBIT_RINGS: readonly OrbitRing[] = [

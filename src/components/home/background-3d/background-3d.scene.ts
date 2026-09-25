@@ -8,9 +8,13 @@ import {
   LineLoop,
   LineSegments,
   PerspectiveCamera,
+  Plane,
   Points,
   PointsMaterial,
+  Raycaster,
   Scene,
+  Vector2,
+  Vector3,
   WebGLRenderer,
 } from 'three';
 
@@ -26,6 +30,7 @@ import {
   CAMERA_NEAR,
   MAX_FRAME_SECONDS,
   MAX_PIXEL_RATIO,
+  MAX_SAMPLES,
   NEURON_OPACITY,
   NEURON_SIZE,
   OUTLINE_OPACITY,
@@ -33,6 +38,7 @@ import {
   PULSE_COUNT,
   PULSE_OPACITY,
   PULSE_SIZE,
+  QUERY_LINE_SECONDS,
   SWAY_ANGLE,
   SWAY_SPEED,
   SYNAPSE_OPACITY,
@@ -42,7 +48,21 @@ import {
 import { buildCatNetwork } from './background-3d.network';
 import { advancePulses, createPulseSystem, writePulsePositions } from './background-3d.pulses';
 import type { PulseSystem } from './background-3d.pulses';
-import type { CatNetwork, Point3 } from './background-3d.types';
+import {
+  askProximity,
+  createQueryState,
+  isReconstructed,
+  summarize,
+} from './background-3d.queries';
+import type { QueryState, QuerySummary } from './background-3d.queries';
+import {
+  createQueryLayer,
+  fadeQueryLayer,
+  recolorQueryLayer,
+  showQuery,
+} from './background-3d.query-layer';
+import type { QueryLayer } from './background-3d.query-layer';
+import type { CatNetwork, Point2, Point3 } from './background-3d.types';
 
 const ACCENT_PROPERTY = '--color-accent';
 const DARK_SCHEME_QUERY = '(prefers-color-scheme: dark)';
@@ -74,6 +94,9 @@ interface BackgroundScene {
   readonly materials: readonly Tinted[];
   readonly ambient: AmbientLayer;
   readonly pulses: Pulses;
+  readonly queries: QueryState;
+  readonly queryLayer: QueryLayer;
+  readonly isStill: boolean;
   /** Seconds of animation so far; drives the sway and bob. */
   elapsed: number;
   lastFrameTime: number | undefined;
@@ -145,7 +168,7 @@ function createCat(
   return { cat, materials: Object.values(materials) };
 }
 
-function createScene(canvas: HTMLCanvasElement, doc: Document): BackgroundScene {
+function createScene(canvas: HTMLCanvasElement, doc: Document, isStill: boolean): BackgroundScene {
   const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
   const camera = new PerspectiveCamera(CAMERA_FIELD_OF_VIEW, 1, CAMERA_NEAR, CAMERA_FAR);
@@ -154,6 +177,9 @@ function createScene(canvas: HTMLCanvasElement, doc: Document): BackgroundScene 
   const network = buildCatNetwork();
   const pulses = createPulses(network);
   const { cat, materials } = createCat(network, pulses, palette);
+  const outline = network.outline.map(([x, y]): Point2 => [x, y]);
+  const queryLayer = createQueryLayer(outline.length, palette.color, palette.dot);
+  cat.add(queryLayer.group);
   const ambient = createAmbientLayer(palette.color, palette.dot);
   const scene = new Scene();
   scene.add(cat, ambient.group);
@@ -166,6 +192,9 @@ function createScene(canvas: HTMLCanvasElement, doc: Document): BackgroundScene 
     materials,
     ambient,
     pulses,
+    queries: createQueryState(outline),
+    queryLayer,
+    isStill,
     elapsed: 0,
     lastFrameTime: undefined,
   };
@@ -185,6 +214,7 @@ function recolor(background: BackgroundScene): void {
   const color = readAccentColor(background.doc);
   background.materials.forEach((material) => material.color.copy(color));
   recolorAmbientLayer(background.ambient, color);
+  recolorQueryLayer(background.queryLayer, color);
 }
 
 /** A slow sway and bob; the cat always faces roughly forward. */
@@ -213,6 +243,7 @@ function animate(background: BackgroundScene, time: number): void {
     last === undefined ? 0 : Math.min((time - last) / MS_PER_SECOND, MAX_FRAME_SECONDS);
   background.elapsed += seconds;
   advancePulses(background.pulses.system, seconds);
+  fadeQueryLayer(background.queryLayer, background.queries, seconds);
   render(background);
 }
 
@@ -233,18 +264,83 @@ function startMotion(background: BackgroundScene): void {
   run();
 }
 
+/** Where a click on the screen meets the cat's own plane, in the cat's coordinates. */
+function toCatPlane(
+  background: BackgroundScene,
+  clientX: number,
+  clientY: number,
+): Point2 | undefined {
+  const pointer = new Vector2(
+    (clientX / window.innerWidth) * 2 - 1,
+    -(clientY / window.innerHeight) * 2 + 1,
+  );
+  const raycaster = new Raycaster();
+  raycaster.setFromCamera(pointer, background.camera);
+  background.cat.updateMatrixWorld();
+  const plane = new Plane(new Vector3(0, 0, 1), 0).applyMatrix4(background.cat.matrixWorld);
+  const hit = raycaster.ray.intersectPlane(plane, new Vector3());
+  if (hit === null) {
+    return undefined;
+  }
+  const local = background.cat.worldToLocal(hit);
+  return [local.x, local.y];
+}
+
+/**
+ * Reduced motion: the answer appears at once and disappears at once a little
+ * later, with no fade and no glow.
+ */
+function showStill(background: BackgroundScene): void {
+  fadeQueryLayer(background.queryLayer, background.queries, 0);
+  render(background);
+  window.setTimeout(() => {
+    fadeQueryLayer(background.queryLayer, background.queries, Number.POSITIVE_INFINITY);
+    render(background);
+  }, QUERY_LINE_SECONDS * MS_PER_SECOND);
+}
+
+function ask(
+  background: BackgroundScene,
+  clientX: number,
+  clientY: number,
+): QuerySummary | undefined {
+  const point = toCatPlane(background, clientX, clientY);
+  if (point === undefined) {
+    return undefined;
+  }
+  const before = isReconstructed(summarize(background.queries));
+  askProximity(background.queries, point, MAX_SAMPLES);
+  const summary = summarize(background.queries);
+  showQuery(background.queryLayer, background.queries, !before && isReconstructed(summary));
+  if (background.isStill) {
+    showStill(background);
+  }
+  return summary;
+}
+
+/** What the rest of the page may do with the running scene. */
+export interface BackgroundHandle {
+  /**
+   * A proximity query at a screen position: the cat answers with the closest
+   * point of its outline. Returns the running totals, or nothing if the click
+   * missed the cat's plane.
+   */
+  readonly ask: (clientX: number, clientY: number) => QuerySummary | undefined;
+}
+
 /**
  * Draws the avatar's cat as a neural network behind the page: neurons filling
  * its silhouette in layers, with signals climbing from the paws to the ears,
- * inside slowly turning orbit rings and dust. The shape never changes. With
- * reduced motion it is drawn once, still.
+ * inside slowly turning orbit rings and dust. The shape never changes; its
+ * faint outline can be uncovered one proximity query at a time. With reduced
+ * motion it is drawn still.
  */
 export function startBackgroundScene(
   canvas: HTMLCanvasElement,
   doc: Document,
   prefersReducedMotion: boolean,
-): void {
-  const background = createScene(canvas, doc);
+): BackgroundHandle {
+  const background = createScene(canvas, doc, prefersReducedMotion);
   const redrawIfStill = (): void => {
     if (prefersReducedMotion) {
       render(background);
@@ -265,4 +361,7 @@ export function startBackgroundScene(
     startMotion(background);
   }
   canvas.setAttribute(READY_ATTRIBUTE, '');
+  return {
+    ask: (clientX, clientY) => ask(background, clientX, clientY),
+  };
 }

@@ -42,7 +42,7 @@ const visibleSections = getVisibleSections(entryCounts, SECTION_SETTINGS);
 <BaseLayout locale={locale} title={t.pageTitle} description={t.pageDescription} hasAlternates>
   <ScrollReveal />
   <SmoothScroll />
-  <Background3D />
+  <Background3D locale={locale} />
   <SectionMarker locale={locale} />
   <main id="content">
     <TitleBlock locale={locale} profile={PROFILE} />

@@ -22,10 +22,12 @@ interface PlannedNeuron {
 
 /** The full silhouette: the right half, then the left half mirrored back to the start. */
 function catOutline(): Point2[] {
-  const leftHalf = CAT_OUTLINE_RIGHT_HALF.slice(1, -1)
-    .toReversed()
-    .map(([x, y]): Point2 => [-x, y]);
-  return [...CAT_OUTLINE_RIGHT_HALF, ...leftHalf];
+  // The half's end points sit on the centre line; dropping them joins the two
+  // halves of the base and of the head top into single edges, so every edge a
+  // visitor can uncover is one straight side of the cat.
+  const rightHalf = CAT_OUTLINE_RIGHT_HALF.slice(1, -1);
+  const leftHalf = rightHalf.toReversed().map(([x, y]): Point2 => [-x, y]);
+  return [...rightHalf, ...leftHalf];
 }
 
 /** Where a horizontal line at height `y` crosses the outline, left to right. */

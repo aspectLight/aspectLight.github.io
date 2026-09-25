@@ -28,6 +28,11 @@ export interface Translations {
   readonly linkedInLabel: string;
   readonly gitHubLabel: string;
   readonly revisionLabel: string;
+  /** Words of the proximity-query readout: "3 queries · 9/22 edges", "reconstructed in 17 queries". */
+  readonly queryLabel: string;
+  readonly queriesLabel: string;
+  readonly edgesLabel: string;
+  readonly reconstructedLabel: string;
   readonly epigraphQuote: string;
   readonly epigraphAuthor: string;
   readonly notFoundMessage: string;
